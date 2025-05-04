@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback, Platform } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback, Platform, TouchableOpacity } from 'react-native';
 import { supabase } from '@/services/supabase';
 import { useNavigation } from '@react-navigation/native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -10,6 +11,7 @@ export default function LoginScreen() {
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleLogin = async () => {
     setLoading(true);
@@ -45,13 +47,18 @@ export default function LoginScreen() {
             onChangeText={setEmail}
           />
 
-          <TextInput
-            placeholder="Password"
-            secureTextEntry={true}
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Password"
+              secureTextEntry={!showPassword}
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="black" />
+            </TouchableOpacity>
+          </View>
 
           {errorMsg && <Text style={styles.error}>{errorMsg}</Text>}
 
@@ -86,12 +93,20 @@ const styles = StyleSheet.create({
       marginBottom: 32,
       textAlign: 'center',
     },
+    inputContainer: { 
+      flexDirection: 'row', 
+      justifyContent: 'space-between',
+      alignItems: 'center', 
+      borderBottomWidth: 1, 
+      borderColor: '#ccc', 
+      padding: 8 
+    },
     input: {
       height: 48,
       borderColor: '#ccc',
       borderWidth: 1,
       borderRadius: 8,
-      marginBottom: 16,
+      marginBottom: 18,
       paddingHorizontal: 12,
       backgroundColor: '#fff',
     },

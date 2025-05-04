@@ -20,7 +20,7 @@ export default function SignUpScreen() {
         setLoading(false);
     } catch (error) {
         setErrorMsg(error.message);
-        console.log(error.message) 
+        console.log(error.message);
     } finally {
         setLoading(false); 
         navigation.replace('(tabs)');
