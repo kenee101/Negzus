@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { Colors } from "@/constants/Colors"
 
 export default function SubscriptionAlertCard({ alert }) {
   return (
@@ -10,9 +11,9 @@ export default function SubscriptionAlertCard({ alert }) {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: '#f8f8f8',
-        padding: 16,
-        borderRadius: 8,
+        backgroundColor: Colors.dark.background,
+        padding: 18,
+        borderRadius: 20,
         marginBottom: 16,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
@@ -22,6 +23,6 @@ const styles = StyleSheet.create({
     },
     alertText: {
         fontSize: 16,
-        color: '#333',
+        color: Colors.light.background,
     },
 });

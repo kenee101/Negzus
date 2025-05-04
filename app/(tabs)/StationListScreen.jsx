@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useStations } from '@/hooks/useStations';
-// import {renderItem} from '@/utils/renderItem';
+import { Colors } from '@/constants/Colors';
 
 const StationListScreen = () => {
   // const [stations, setStations] = useState([]);
@@ -43,9 +43,9 @@ const StationListScreen = () => {
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.address}>{item.address}</Text>
       <View style={styles.availability}>
-        <Text>Fuel: {item.fuel_available ? `✅ ₦${item.fuel_price}` : '❌'}</Text>
-        <Text>Diesel: {item.diesel_available ? `✅ ₦${item.diesel_price}` : '❌'}</Text>
-        <Text>Gas: {item.gas_available ? `✅ ₦${item.gas_price}` : '❌'}</Text>
+        <Text style={{color: "#fff"}}>Fuel: {item.fuel_available ? `✅ ₦${item.fuel_price}` : '❌'}</Text>
+        <Text style={{color: "#fff"}}>Diesel: {item.diesel_available ? `✅ ₦${item.diesel_price}` : '❌'}</Text>
+        <Text style={{color: "#fff"}}>Gas: {item.gas_available ? `✅ ₦${item.gas_price}` : '❌'}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: 'black',
   },
   searchInput: {
     backgroundColor: '#f0f0f0',
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   card: {
-    backgroundColor: '#fafafa',
+    backgroundColor: Colors.dark.background,
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,
@@ -95,14 +95,16 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: "#fff",
   },
   address: {
-    color: '#666',
+    color: '#fff',
     marginBottom: 8,
   },
   availability: {
     flexDirection: 'column',
     gap: 4,
+    color: "#fff",
   },
   loaderContainer: {
     flex: 1,
