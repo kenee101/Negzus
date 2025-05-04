@@ -15,43 +15,81 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />,
+        tabBarBackground: () => (
+          <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />
+        ),
         tabBarStyle: Platform.select({
           ios: {
             // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
+            position: "absolute",
           },
           default: {},
         }),
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <FontAwesome5 name="map-marker-alt" size={28} color={color} />,
+          title: "Home",
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="home" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="MapScreen"
+        options={{
+          title: "Map",
+          headerShown: false,
+          headerBackground: () => (
+            <View
+              style={{ flex: 1, backgroundColor: Colors.dark.background }}
+            />
+          ),
+          headerTintColor: Colors.light.tint,
+          tabBarIcon: ({ color }) => (
+            <FontAwesome5 name="map-marker-alt" size={28} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="StationListScreen"
         options={{
-          title: 'Stations',
+          title: "Stations",
           headerShown: false,
-          headerBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />,
+          headerBackground: () => (
+            <View
+              style={{ flex: 1, backgroundColor: Colors.dark.background }}
+            />
+          ),
           headerTintColor: Colors.light.tint,
-          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="gas-station" size={28} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons
+              name="gas-station"
+              size={28}
+              color={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="ProfileScreen"
         options={{
-          title: 'Profile',
+          title: "Profile",
           headerShown: false,
-          headerBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />,
+          headerBackground: () => (
+            <View
+              style={{ flex: 1, backgroundColor: Colors.dark.background }}
+            />
+          ),
           headerTintColor: Colors.light.tint,
-          tabBarIcon: ({ color }) => <MaterialIcons name="person-pin" size={28} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="person-pin" size={28} color={color} />
+          ),
         }}
       />
     </Tabs>

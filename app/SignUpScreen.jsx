@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, Platform, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, Platform, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { signUpUser } from '@/services/api';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function SignUpScreen() {
   const navigation = useNavigation();
@@ -49,13 +50,18 @@ export default function SignUpScreen() {
             onChangeText={setEmail}
           />
 
-          <TextInput
-            placeholder="Password"
-            secureTextEntry={!showPassword}
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              placeholder="Password"
+              secureTextEntry={!showPassword}
+              style={[styles.input, {flex: 1}]}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity style={{marginBottom: 15, marginLeft: 10}} onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="black" />
+            </TouchableOpacity>
+          </View>
 
           {errorMsg && <Text style={styles.error}>{errorMsg}</Text>}
 
@@ -89,6 +95,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 32,
         textAlign: 'center',
+      },
+      inputContainer: { 
+        flexDirection: 'row', 
+        justifyContent: 'center',
+        alignItems: 'center',  
       },
       input: {
         height: 48,

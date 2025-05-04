@@ -1,187 +1,102 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Pressable, Animated, Keyboard,
-  TouchableWithoutFeedback } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from 'expo-router';
-import { useStations } from '@/hooks/useStations';
+import { Text, StyleSheet, ScrollView, View, FlatList, TouchableOpacity} from 'react-native';
+import SummaryStatsHeader from '@/components/station/SummaryStatsHeader';
+import SubscriptionAlertCard from '@/components/station/SubscriptionAlertCard';
+import {Colors} from "@/constants/Colors"
 
-const HomeScreen = () => {
-  const navigation = useNavigation();
-  const [isFocused, setIsFocused] = useState(false);
+const stations = [
+  { id: '1', name: 'Total - Garki', fuel: '₦650', gas: '₦750', diesel: '₦820', distance: '2.5km' },
+  { id: '2', name: 'Mobil - Wuse', fuel: '₦630', gas: '₦740', diesel: '₦810', distance: '4.2km' },
+];
 
-  // const [stations, setStations] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [region, setRegion] = useState({
-    latitude: 9.05785, // Abuja default center
-    longitude: 7.49508,
-    latitudeDelta: 0.1,
-    longitudeDelta: 0.1,
-  });
+const alerts = [
+  { id: '1', message: 'Fuel restocked at Total - Garki' },
+  { id: '2', message: 'Diesel low at Mobil - Wuse' },
+];
 
-  // Animated value for smooth transition
-  const inputWidth = useRef(new Animated.Value(1)).current;
+const renderItem = ({ item }) => (
+    <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate('StationDetailScreen', { station: item })}
+    >
+        <Text style={styles.name}>{item.name}</Text>
+        {/* <Text style={styles.address}>{item.address}</Text> */}
+        <View style={styles.availability}>
+          <Text style={{color: "#ccc"}}>Fuel: {item.fuel ? `✅ ${item.fuel}` : '❌'}</Text>
+          <Text style={{color: "#ccc"}}>Diesel: {item.diesel ? `✅ ${item.diesel}` : '❌'}</Text>
+          <Text style={{color: "#ccc"}}>Gas: {item.gas ? `✅ ${item.gas}` : '❌'}</Text>
+          <Text style={{color: "#ccc"}}>Distance: {item.distance ? `${item.distance}` : '❌'}</Text>
+        </View>
+    </TouchableOpacity>
+);
 
-  // Fetch stations using TanStack Query
-  const { stations, isLoading, error } = useStations()
-  
-  // Handle focus animation
-  const handleFocus = () => {
-    setIsFocused(true);
-    Animated.timing(inputWidth, {
-      toValue: 1.1, // Expand width by 10%
-      duration: 1000,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  // Handle blur animation
-  const handleBlur = () => {
-    setIsFocused(false);
-    Animated.timing(inputWidth, {
-      toValue: 1, // Reset width
-      duration: 1000,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  const dismissKeyboard = () => {
-    Keyboard.dismiss(); // Unfocus the TextInput
-    handleBlur(); // Trigger blur animation
-  };
-
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Loading stations...</Text>
-      </View>
-    );
-  }
-  
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text>Error loading stations. Please try again later.</Text>
-      </View>
-    );
-  }
-  
-  const filteredStations = stations.filter(station =>
-    station.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+export default function DashboardScreen() {
   return (
-    <TouchableWithoutFeedback onPress={dismissKeyboard}>
-      <View style={styles.container}>
-        {/* Search Bar */}
-          <View className="absolute top-0 left-0 right-0 z-10">
-            <Pressable style={({ pressed }) => [{ transform: pressed ? [{ translateX: 20 }] : [] }]}>
-              <View style={styles.searchContainer}>
-                <Ionicons name="search" size={20} color="#333" />
-                <Animated.View style={{ flex: inputWidth }}>
-                  <TextInput
-                    style={[styles.searchInput, isFocused && styles.searchInputFocused]}
-                    placeholder="Search for a station..."
-                    value={searchQuery}
-                    onChangeText={text => setSearchQuery(text)}
-                    onFocus={handleFocus} 
-                    onBlur={handleBlur} 
-                  />
-                </Animated.View>
-              </View>
-            </Pressable>
-          </View>
-        {/* Map */}
-        <MapView
-          style={styles.map}
-          region={region}
-          showsUserLocation
-        >
-          {filteredStations.map(station => (
-            <Marker
-              key={station.id}
-              coordinate={{
-                latitude: station.latitude,
-                longitude: station.longitude,
-              }}
-              title={station.name}
-              description={`Fuel: ₦${station.fuelPrice}`}
-              onPress={() => navigation.navigate('StationDetailScreen', { station: station })}
-            />
-          ))}
-        </MapView>
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>Dashboard</Text>
 
-        {/* Optional: List View */}
-        {/* 
-        <FlatList
-          data={filteredStations}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.listItem}>
-              <Text style={styles.stationName}>{item.name}</Text>
-              <Text>{`₦${item.fuelPrice}`}</Text>
-            </TouchableOpacity>
-          )}
-        />
-        */}
-      </View>
-    </TouchableWithoutFeedback>
+      <SummaryStatsHeader />
+
+      <Text style={styles.sectionTitle}>Nearby Stations</Text>
+      {stations.map((station) => (
+        <View style={{flex: 1}}>
+          <FlatList
+            data={stations}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
+        </View>
+      ))}
+
+      <Text style={styles.sectionTitle}>Your Alerts</Text>
+      {alerts.map((alert) => (
+        <SubscriptionAlertCard key={alert.id} alert={alert} />
+      ))}
+    </ScrollView>
   );
-};
-
-export default HomeScreen;
+} 
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#0e0e0e",
+    padding: 20,
+    marginBottom: 80,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  header: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 20,
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#ccc",
+    marginTop: 20,
+    marginBottom: 5,
   },
-  searchContainer: {
-    position: 'absolute',
-    top: 30,
-    left: 20,
-    right: 20,
-    zIndex: 10,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 5,
+  card: {
+    backgroundColor: Colors.dark.background,
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 12,
+    marginRight: 12,
+    elevation: 2,
   },
-  searchInput: {
-    flex: 1,
-    marginLeft: 10,
+  name: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#ccc",
   },
-  searchInputFocused: {
-    height: 30,
-    borderColor: '#007BFF',
-    borderBottomWidth: 1,
+  address: {
+    color: "#666",
+    marginBottom: 8,
+    color: Colors.light.background,
   },
-  map: {
-    flex: 1,
-  },
-  listItem: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  stationName: {
-    fontWeight: 'bold',
+  availability: {
+    flexDirection: "column",
+    gap: 4,
   },
 });

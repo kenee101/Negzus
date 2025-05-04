@@ -51,11 +51,11 @@ export default function LoginScreen() {
             <TextInput
               placeholder="Password"
               secureTextEntry={!showPassword}
-              style={styles.input}
+              style={[styles.input, {flex: 1}]}
               value={password}
               onChangeText={setPassword}
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <TouchableOpacity style={{marginBottom: 15, marginLeft: 10}} onPress={() => setShowPassword(!showPassword)}>
               <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="black" />
             </TouchableOpacity>
           </View>
@@ -95,11 +95,8 @@ const styles = StyleSheet.create({
     },
     inputContainer: { 
       flexDirection: 'row', 
-      justifyContent: 'space-between',
+      justifyContent: 'center',
       alignItems: 'center', 
-      borderBottomWidth: 1, 
-      borderColor: '#ccc', 
-      padding: 8 
     },
     input: {
       height: 48,

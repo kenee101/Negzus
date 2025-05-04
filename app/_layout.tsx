@@ -56,6 +56,7 @@ export default function RootLayout() {
         <Stack screenOptions={{title: 'Negzus', headerBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />}}>
           <Stack.Screen name="LoginScreen" options={{ title: 'Log In', headerTintColor: Colors.light.tint }}/>
           <Stack.Screen name="SignUpScreen" options={{ title: 'Sign Up', headerTintColor: Colors.light.tint }}/>
+          <Stack.Screen name="+not-found" />
         </Stack>
         }
       </ThemeProvider>
