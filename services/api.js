@@ -82,3 +82,4 @@ export async function signUpUser({ email, password, fullName }) {
 
   return user;
 }
+

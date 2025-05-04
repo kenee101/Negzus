@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useStations } from '@/hooks/useStations';
+// import {renderItem} from '@/utils/renderItem';
 
 const StationListScreen = () => {
   // const [stations, setStations] = useState([]);
