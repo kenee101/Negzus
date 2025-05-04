@@ -6,7 +6,7 @@ export const fetchUserProfile = async (userId) => {
     .from('users')
     .select('id, full_name, email, phone_number')
     .eq('id', userId)
-    // .limit(1);
+    .single();
 
   if (error) throw error;
   // return data?.[0] || null

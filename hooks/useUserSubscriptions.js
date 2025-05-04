@@ -7,8 +7,8 @@ const fetchUserSubscriptions = async (userId) => {
     .eq('user_id', userId);
 
   if (error) throw error;
-  return data;
-};
+  return data || [];
+}; 
 
 export function useUserSubscriptions(userId) {
   return useQuery({ queryKey: ['user-subscriptions', userId], queryFn: () => fetchUserSubscriptions(userId), enabled: !!userId, networkMode: 'offlineFirst'});

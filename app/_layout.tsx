@@ -58,8 +58,8 @@ export default function RootLayout() {
           <Stack.Screen name="SignUpScreen" options={{ title: 'Sign Up', headerTintColor: Colors.light.tint }}/>
         </Stack>
         }
-        <StatusBar style="light" />
       </ThemeProvider>
+      <StatusBar style="light" />
     </QueryClientProvider>
   );
 }

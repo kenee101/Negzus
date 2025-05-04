@@ -29,9 +29,9 @@ export default function ProfileScreen() {
     // console.log(profile)
   // }, [user])
 
-  fetchUserProfile('647c21f8-1d42-4d65-9d4f-0d9c2d651794')
-  .then((data) => console.log(data))
-  .catch((error) => console.error(error));
+  // fetchUserProfile('647c21f8-1d42-4d65-9d4f-0d9c2d651794')
+  // .then((data) => console.log(data))
+  // .catch((error) => console.error(error));
 
   // console.log(subscriptions)
 
@@ -69,9 +69,9 @@ export default function ProfileScreen() {
         <Text>You are not logged in.</Text>
       )}
       <View style={styles.profileSection}>
-        {/* <Text style={styles.name}>{profile?.full_name}</Text> */}
-        {/* <Text style={styles.email}>{profile?.email}</Text>
-        <Text style={styles.phone}>{profile?.phone_number || 'No Phone Number'}</Text> */}
+        <Text style={styles.name}>{profile?.full_name}</Text>
+        <Text style={styles.email}>{profile?.email}</Text>
+        <Text style={styles.phone}>{profile?.phone_number || 'No Phone Number'}</Text>
       </View>
 
       <Text style={styles.sectionTitle}>Your Subscribed Stations</Text>

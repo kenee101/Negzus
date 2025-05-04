@@ -2,58 +2,61 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking, ActivityIndicator } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { checkSubscription } from '@/services/api';
+// import { checkSubscription } from '@/services/api';
 import {useAuth} from '@/hooks/useAuth';
+import { useUserSubscriptions } from '@/hooks/useUserSubscriptions';
 
 const StationDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { station } = route.params;
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // const [isSubscribed, setIsSubscribed] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const {user} = useAuth();
+  const { data: subscriptions, isLoading: subsLoading } = useUserSubscriptions(user?.id);
 
   const openInGoogleMaps = () => {
     const url = `https://www.google.com/maps/search/?api=1&query=${station.latitude},${station.longitude}`;
     Linking.openURL(url);
   };
   
-  useEffect(() => {
-    fetchSubscriptionStatus();
-  }, []);
+  // useEffect(() => {
+  //   fetchSubscriptionStatus();
+  // }, []);
   
-  const fetchSubscriptionStatus = async () => {
-    try {
-      setLoading(true);
-      const subscribed = await checkSubscription(user?.id, station.id);
-      setIsSubscribed(subscribed);
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to check subscription', error);
-      setLoading(false);
-    } 
-  };
+  // const fetchSubscriptionStatus = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const subscribed = await checkSubscription(user?.id, station.id);
+  //     setIsSubscribed(subscribed);
+  //     setLoading(false);
+  //   } catch (error) { 
+  //     console.error('Failed to check subscription', error);
+  //     setLoading(false);
+  //   } 
+  // };
   
   const handleSubscribeToggle = async () => {
     try {
-      if (isSubscribed) {
+      if (subscriptions) {
         await unsubscribeFromStation(user.id, station.id);
         Alert.alert('Unsubscribed', 'You have unsubscribed from updates.');
       } else {
         await subscribeToStation(user.id, station.id);
         Alert.alert('Subscribed', 'You will get updates about this station.');
       }
-      setIsSubscribed(!isSubscribed);
+      // setIsSubscribed(!isSubscribed);
     } catch (error) {
       console.error('Subscription toggle failed', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
     }
   };
   
-  if (loading) {
+  if (subsLoading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#588157" />
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading...</Text>
       </View>
     );
   }
@@ -95,7 +98,7 @@ const StationDetailScreen = () => {
 
       <TouchableOpacity style={styles.subscribeButton} onPress={handleSubscribeToggle}>
         <Text style={styles.subscribeButtonText}>
-          {isSubscribed ? 'Unsubscribe from Updates' : 'Subscribe to Updates'}
+          {subscriptions ? 'Unsubscribe from Updates' : 'Subscribe to Updates'}
         </Text>
       </TouchableOpacity>
 
@@ -151,6 +154,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    marginTop: 10,
   },
   directionsText: {
     color: '#fff',
