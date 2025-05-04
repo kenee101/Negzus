@@ -1,6 +1,6 @@
 import { Text, StyleSheet, ScrollView , FlatList} from 'react-native';
-import SummaryStatsHeader from '@/components/SummaryStatsHeader';
-import SubscriptionAlertCard from '@/components/SubscriptionAlertCard';
+import SummaryStatsHeader from '@/components/station/SummaryStatsHeader';
+import SubscriptionAlertCard from '@/components/station/SubscriptionAlertCard';
 // import StationListItem from '@/components/StationListItem';
 // import { renderItem } from '@/utils/renderItem';
 

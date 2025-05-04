@@ -63,23 +63,37 @@ export async function signUpUser({ email, password, fullName }) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        full_name: fullName,
+      },
+    },
   });
 
   if (error) throw error;
 
   const user = data.user;
-
+  // console.log(data)
   // Insert into users table
-  const { error: insertError } = await supabase.from('users').insert([
-    {
-      id: user.id,
-      full_name: fullName,
-      email: user.email,
-    },
-  ]);
+  try{
+    const authenticatedUser = await createUserIfNotExists(user)
+    return authenticatedUser
+  } catch(error) {
+    console.log(error.message)
+    throw error
+  }
 
-  if (insertError) throw insertError;
+  // const { data: authenticatedUser, error: insertError } = await supabase.from('users').insert([
+  //   {
+  //     id: user.id,
+  //     full_name: fullName,
+  //     // email: user.email,
+  //     email,
+  //   },
+  // ]);
 
-  return user;
+  // if (insertError) throw insertError;
+
+  // return authenticatedUser;
 }
 

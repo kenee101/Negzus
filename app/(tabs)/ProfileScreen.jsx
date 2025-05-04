@@ -16,6 +16,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
   const { user } = useAuth();
+  // console.log(user?.id, user?.email, user?.phone_number, user?.full_name)
   const { data: profile, isLoading: profileLoading } = useUserProfile(user?.id);
   const { data: subscriptions, isLoading: subsLoading } = useUserSubscriptions(user?.id);
 
@@ -58,7 +59,7 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       {user ? (
         <>
-          <Text style={styles.text}>Welcome, {user.email}</Text>
+          <Text style={styles.text}>Welcome, {profile.full_name}</Text>
            {loading ? (
               <ActivityIndicator color="#0000ff" />
             ) : (
@@ -69,7 +70,7 @@ export default function ProfileScreen() {
         <Text>You are not logged in.</Text>
       )}
       <View style={styles.profileSection}>
-        <Text style={styles.name}>{profile?.full_name}</Text>
+        {/* <Text style={styles.name}>{profile?.full_name}</Text> */}
         <Text style={styles.email}>{profile?.email}</Text>
         <Text style={styles.phone}>{profile?.phone_number || 'No Phone Number'}</Text>
       </View>

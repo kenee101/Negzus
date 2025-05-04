@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet, ActivityIndicator, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback, Platform } from 'react-native';
 import { supabase } from '@/services/supabase';
 import { useNavigation } from '@react-navigation/native';
 
@@ -30,41 +30,46 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login to Negzus</Text>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+    {/* <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={100}> */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <Text style={styles.title}>Login to Negzus</Text>
 
-      <TextInput
-        placeholder="Email"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-      />
+          <TextInput
+            placeholder="Email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+          />
 
-      <TextInput
-        placeholder="Password"
-        secureTextEntry={true}
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-      />
+          <TextInput
+            placeholder="Password"
+            secureTextEntry={true}
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+          />
 
-      {errorMsg && <Text style={styles.error}>{errorMsg}</Text>}
+          {errorMsg && <Text style={styles.error}>{errorMsg}</Text>}
 
-      {loading ? (
-        <ActivityIndicator color="#0000ff" />
-      ) : (
-        <Button title="Login" onPress={handleLogin} />
-      )}
+          {loading ? (
+            <ActivityIndicator color="#0000ff" />
+          ) : (
+            <Button title="Login" onPress={handleLogin} />
+          )}
 
-      <Text style={styles.signupPrompt}>
-        Don't have an account?{' '}
-        <Text style={styles.link} onPress={() => navigation.replace('SignUpScreen')}>
-          Sign up
-        </Text>
-      </Text>
-    </View>
+          <Text style={styles.signupPrompt}>
+            Don't have an account?{' '}
+            <Text style={styles.link} onPress={() => navigation.replace('SignUpScreen')}>
+              Sign up
+            </Text>
+          </Text>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
