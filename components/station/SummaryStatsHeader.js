@@ -22,7 +22,12 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: "center",
+    gap: 4,
   },
-  label: { color: '#fff', fontSize: 16 },
+  label: { 
+    color: '#fff', 
+    fontSize: 16 
+  },
 });

@@ -118,5 +118,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: "#fff", 
   },
-  // text: {justifyContent: 'center', alignItems: 'center'}
+  text: {
+    justifyContent: 'center', 
+    alignItems: 'center',
+    color: "#fff",
+  }
 });

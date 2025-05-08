@@ -3,6 +3,7 @@ import SummaryStatsHeader from '@/components/station/SummaryStatsHeader';
 import SubscriptionAlertCard from '@/components/station/SubscriptionAlertCard';
 import { Colors } from "@/constants/Colors";
 import { useState, useCallback } from 'react';
+import { useNavigation } from "expo-router"
 
 const stations = [
   { 
@@ -56,7 +57,8 @@ const renderItem = ({ item, navigation }) => (
     </TouchableOpacity>
 );
 
-export default function DashboardScreen({ navigation }) {
+export default function DashboardScreen() {
+  const navigation = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(() => {
