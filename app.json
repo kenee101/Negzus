@@ -25,6 +25,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-sqlite",
       [
         "expo-splash-screen",
         {
@@ -34,7 +35,13 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-sqlite"
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(name) to use your location."
+        }
+
+      ]
     ],
     "experiments": {
       "typedRoutes": true

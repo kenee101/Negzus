@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
+import * as Location from 'expo-location';
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
-  TouchableOpacity,
-  FlatList,
   ActivityIndicator,
   Pressable,
   Animated,
@@ -20,6 +19,21 @@ import { useStations } from "@/hooks/useStations";
 const MapScreen = () => {
   const navigation = useNavigation();
   const [isFocused, setIsFocused] = useState(false);
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let loc = await Location.getCurrentPositionAsync({});
+      setLocation(loc.coords);
+    })();
+  }, []);
 
   // const [stations, setStations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,11 +71,11 @@ const MapScreen = () => {
   };
 
   const dismissKeyboard = () => {
-    Keyboard.dismiss(); // Unfocus the TextInput
+    Keyboard.dismiss();
     handleBlur(); // Trigger blur animation
   };
 
-  if (isLoading) {
+  if (isLoading || !location) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -110,7 +124,10 @@ const MapScreen = () => {
             </View>
           </Pressable>
         </View>
-        {/* Map */}
+        <View>
+          <Text>Latitude: {location.latitude}</Text>
+          <Text>Longitude: {location.longitude}</Text>
+        </View>
         <MapView style={styles.map} region={region} showsUserLocation>
           {filteredStations.map((station) => (
             <Marker
@@ -127,20 +144,6 @@ const MapScreen = () => {
             />
           ))}
         </MapView>
-
-        {/* Optional: List View */}
-        {/* 
-        <FlatList
-          data={filteredStations}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.listItem}>
-              <Text style={styles.stationName}>{item.name}</Text>
-              <Text>{`₦${item.fuelPrice}`}</Text>
-            </TouchableOpacity>
-          )}
-        />
-        */}
       </View>
     </TouchableWithoutFeedback>
   );
