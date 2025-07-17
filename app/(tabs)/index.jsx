@@ -1,88 +1,137 @@
-import { Text, StyleSheet, View, FlatList, TouchableOpacity} from 'react-native';
+import { Text, StyleSheet, View, FlatList, RefreshControl, TouchableOpacity, ActivityIndicator} from 'react-native';
 import SummaryStatsHeader from '@/components/station/SummaryStatsHeader';
 import SubscriptionAlertCard from '@/components/station/SubscriptionAlertCard';
 import { Colors } from "@/constants/Colors";
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigation } from "expo-router"
+import * as Location from 'expo-location';
+import Toast from 'react-native-root-toast';
+import { useStations } from '@/hooks/useStations';
 
-const stations = [
-  { 
-    id: '1', 
-    name: 'Total - Garki', 
-    address: 'Abuja, Nigeria', 
-    fuel: '₦650', 
-    gas: '₦750', 
-    diesel: '₦820', 
-    distance: '2.5km', 
-    fuelLevel: 80,
-    gasLevel: 65,
-    dieselLevel: 50,
-    fuelStatus: 'Available', 
-  },
-  { 
-    id: '2',
-    name: 'Mobil - Wuse', 
-    address: 'Abuja, Nigeria', 
-    fuel: '₦630', 
-    gas: '₦740',
-    diesel: '₦810', 
-    distance: '4.2km', 
-    fuelLevel: 40,
-    gasLevel: 90,
-    dieselLevel: 70,
-    fuelStatus: 'Available',
-  },
-];
 
 const alerts = [
-  { id: '1', message: 'Fuel restocked at Total - Garki' },
-  { id: '2', message: 'Diesel low at Mobil - Wuse' },
+  { id: '1', message: 'Fuel restocked at Forte - Ipaja' },
+  { id: '2', message: 'Diesel low at Mobil - Idiroko' },
 ];
 
-const renderItem = ({ item, navigation }) => (
-    <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate('StationDetailScreen', { station: item })}
-    >
-      <View style={{flex: 1, flexDirection: "row", gap: 4}}>
-        <Text style={styles.name}>{item.name},</Text>
-        <Text style={styles.address}>{item.address}</Text>
-      </View>
-      <View style={styles.availability}>
-        <Text style={{color: "#fff"}}>Fuel: {item.fuel ? `✅ ${item.fuel}` : '❌'}</Text>
-        <Text style={{color: "#fff"}}>Diesel: {item.diesel ? `✅ ${item.diesel}` : '❌'}</Text>
-        <Text style={{color: "#fff"}}>Gas: {item.gas ? `✅ ${item.gas}` : '❌'}</Text>
-        <Text style={{color: "#fff"}}>Distance: {item.distance ? `${item.distance}` : '❌'}</Text>
-      </View>
-    </TouchableOpacity>
-);
+// calculate distance between two lat/lon in km
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 
 export default function DashboardScreen() {
   const navigation = useNavigation();
   const [refreshing, setRefreshing] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [nearbyStations, setNearbyStations] = useState([]);
+
+  const { stations, isLoading, error, refetch } = useStations();
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setUserLocation(null);
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({});
+      setUserLocation(location.coords);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (userLocation) {
+      // Filter stations within 5km
+      const filtered = stations?.filter(station => {
+        if (!station.latitude || !station.longitude) return true; // fallback: show all
+        const dist = calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          station.latitude,
+          station.longitude
+        );
+        return dist <= 2;
+      });
+      setNearbyStations(filtered);
+    } else {
+      setNearbyStations(stations);
+    }
+  }, [userLocation, stations]);
+
+  // Show alerts as toasts on mount
+  useEffect(() => {
+    alerts.forEach((alert, idx) => {
+      setTimeout(() => {
+        Toast.show(alert.message, {
+          duration: Toast.durations.SHORT,
+          position: Toast.positions.BOTTOM,
+        });
+      }, 3000);
+    });
+  }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // Simulate a network request or data re-fetch
-    setTimeout(() => {
-      // You can add logic to actually reload data here
-      setRefreshing(false);
-    }, 1500);
-  }, []);
+    refetch().finally(() => setRefreshing(false));
+  }, [refetch]);
+
+  const renderItem = ({ item, navigation }) => {
+    if (isLoading) {
+      return (
+        <View style={[styles.card, { alignItems: 'center', justifyContent: 'center', height: 100 }]}>
+          <ActivityIndicator size="small" color="#4ade80" />
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate('StationDetailScreen', { station: item })}
+      >
+        <View style={{flex: 1, flexDirection: "column", gap: 8}}>
+          <Text style={styles.name}>{item.name}</Text>
+          <Text style={styles.address}>{item.address}</Text>
+        </View>
+        <View style={styles.availability}>
+          <Text style={{color: "#fff"}}>Fuel: {item.fuel_price ? `₦${item.fuel_price}` : '-'}</Text>
+          <Text style={{color: "#fff"}}>Diesel: {item.diesel_price ? `₦${item.diesel_price}` : '-'}</Text>
+          <Text style={{color: "#fff"}}>Gas: {item.gas_price ? `₦${item.gas_price}` : '-'}</Text>
+        </View>
+      </TouchableOpacity>
+    )
+  };
 
   return (
     <FlatList
-    data={stations}
-    keyExtractor={(item) => item.id}
-    renderItem={(props) => renderItem({ ...props, navigation })}
+    data={isLoading ? Array(5).fill({}) : nearbyStations}
+    keyExtractor={(item, idx) => item.id ? item.id.toString() : `skeleton-${idx}`}
+    renderItem={renderItem}
     showsVerticalScrollIndicator={false}
+    style={{ backgroundColor: 'black' }}
     contentContainerStyle={styles.container}
-    refreshing={refreshing}
-    onRefresh={onRefresh}
+    refreshControl={
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        progressBackgroundColor="transparent"
+        tintColor={"white"}
+        colors={["white"]}
+      />
+    }
     ListHeaderComponent={
       <>
         <Text style={styles.header}>Dashboard</Text>
-        <SummaryStatsHeader stations={stations}/>
+        <SummaryStatsHeader stations={nearbyStations}/>
         <Text style={styles.sectionTitle}>Nearby Stations</Text>
       </>
     }
@@ -100,7 +149,7 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#0e0e0e",
+    backgroundColor: "black",
     padding: 20,
     paddingBottom: 100,
   },

@@ -33,7 +33,6 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-    {/* <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={100}> */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
           <Text style={styles.title}>Login to Negzus</Text>
@@ -51,11 +50,14 @@ export default function LoginScreen() {
             <TextInput
               placeholder="Password"
               secureTextEntry={!showPassword}
-              style={[styles.input, {flex: 1}]}
+              style={[styles.input, styles.passwordInput]}
               value={password}
               onChangeText={setPassword}
             />
-            <TouchableOpacity style={{marginBottom: 15, marginLeft: 10}} onPress={() => setShowPassword(!showPassword)}>
+            <TouchableOpacity style={styles.eyeIcon} 
+            onPress={() => setShowPassword(!showPassword)}
+            activeOpacity={0.7}
+            >
               <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="black" />
             </TouchableOpacity>
           </View>
@@ -97,6 +99,19 @@ const styles = StyleSheet.create({
       flexDirection: 'row', 
       justifyContent: 'center',
       alignItems: 'center', 
+      marginBottom: 18,
+      position: 'relative',
+      width: '100%',
+    },
+    passwordInput: {
+      flex: 1,
+      marginBottom: 0,
+    },
+    eyeIcon: {
+      position: 'absolute',
+      right: 8,
+      top: 8,
+      padding: 4,
     },
     input: {
       height: 48,
