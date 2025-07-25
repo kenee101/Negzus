@@ -19,15 +19,24 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: () => (
-          <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />
+          <View style={{ backgroundColor: Colors.dark.background }} />
         ),
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: "absolute",
-          },
-          default: {},
-        }),
+        tabBarStyle: {
+          position: 'absolute',
+          marginHorizontal: '9%',
+          width: '80%', 
+          bottom: 60,
+          borderRadius: 32,    
+          backgroundColor: Colors.dark.background,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
+          height: 64,
+          borderTopWidth: 0,
+          paddingTop: 5,
+        },
       }}
     >
       <Tabs.Screen

@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { View } from 'react-native';
-import 'react-native-reanimated';
+// import 'react-native-reanimated';
 import '@/global.css'
 
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -51,6 +51,8 @@ export default function RootLayout() {
         <Stack screenOptions={{title: 'Negzus', headerBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />}}>
           <Stack.Screen name="(tabs)" options={{ headerTintColor: Colors.light.tint, }} />
           <Stack.Screen name="StationDetailScreen" options={{ title: 'Station Details', headerTintColor: Colors.light.tint }}/>
+          <Stack.Screen name="PaymentScreenMerchant" options={{ title: 'Payments', headerTintColor: Colors.light.tint }}/>
+          <Stack.Screen name="PaymentScreenUser" options={{ title: 'Payments', headerTintColor: Colors.light.tint }}/>
           <Stack.Screen name="+not-found" />
         </Stack> : 
         <Stack screenOptions={{title: 'Negzus', headerBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />}}>

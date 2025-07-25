@@ -1,4 +1,4 @@
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, Button, Image, Modal, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, Button, Image, Modal, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUserSubscriptions } from '@/hooks/useUserSubscriptions';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,7 +10,6 @@ import { supabase } from '@/services/supabase';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
-const PLACEHOLDER_IMG = 'https://ui-avatars.com/api/?name=User&background=007BFF&color=fff&size=128';
 
 export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
@@ -21,23 +20,25 @@ export default function ProfileScreen() {
   const { user } = useAuth();
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useUserProfile(user?.id);
   const { data: subscriptions, isLoading: subsLoading } = useUserSubscriptions(user?.id);
-
+  
+  const PLACEHOLDER_IMG = `https://ui-avatars.com/api/?name=${profile?.full_name.charAt(0).toUpperCase() || ''}&background=007BFF&color=fff&size=128`;
+  
   useEffect(() => {
     if (profile) {
       setEditName(profile.full_name || '');
       setEditPhone(profile.phone_number || '');
     }
   }, [profile]);
-
+  
   if (profileLoading || subsLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Loading...</Text>
+        <Text style={{color: "white"}}>Loading...</Text>
       </View>
     );
   }
-
+  
   const handleLogout = async () => {
     Alert.alert(
       'Log Out',
@@ -76,51 +77,70 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutIconButton}>
-          <Ionicons name="log-out-outline" size={28} color="#dc3545" />
-        </TouchableOpacity>
-      </View>
-      {user ? (
-        <>
-          <Image
-            source={{ uri: profile?.avatar_url || PLACEHOLDER_IMG }}
-            style={styles.avatar}
-          />
-          <Text style={styles.text}>Welcome, {profile?.full_name}</Text>
-          <Text style={styles.email}>{profile?.email}</Text>
-          <Text style={styles.phone}>{profile?.phone_number || 'No Phone Number'}</Text>
-          {/* Stats */}
-          <View style={styles.statsRow}>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{subsCount}</Text>
-              <Text style={styles.statLabel}>Subscriptions</Text>
-            </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{joinDate}</Text>
-              <Text style={styles.statLabel}>Joined</Text>
-            </View>
-          </View>
-          <TouchableOpacity style={styles.editButton} onPress={() => setEditModalVisible(true)}>
-            <Text style={styles.editButtonText}>Edit Profile</Text>
+      <ScrollView contentContainerStyle={{ alignItems: 'center', paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutIconButton}>
+            <Ionicons name="log-out-outline" size={28} color="#dc3545" />
           </TouchableOpacity>
-        </>
-      ) : (
-        <Text>You are not logged in.</Text>
-      )}
-      <View style={styles.profileSection}>
-        <Text style={styles.sectionTitle}>Your Subscribed Stations</Text>
-        <FlatList
-          data={subscriptions}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <StationSubscriptionCard station={item.stations} />
-          )}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>You have no subscriptions yet.</Text>
-          }
-        />
-      </View>
+        </View>
+        {user ? (
+          <>
+            <Image
+              source={{ uri: profile?.avatar_url || PLACEHOLDER_IMG }}
+              style={styles.avatar}
+            />
+            <Text style={styles.text}>Welcome, {profile?.full_name}</Text>
+            <Text style={styles.email}>{profile?.email}</Text>
+            <Text style={styles.phone}>{profile?.phone_number || 'No Phone Number'}</Text>
+            {/* Stats */}
+            <View style={styles.statsRow}>
+              <View style={styles.statBox}>
+                <Text style={styles.statValue}>{subsCount}</Text>
+                <Text style={styles.statLabel}>Subscriptions</Text>
+              </View>
+              <View style={styles.statBox}>
+                <Text style={styles.statValue}>{joinDate}</Text>
+                <Text style={styles.statLabel}>Joined</Text>
+              </View>
+            </View>
+            <TouchableOpacity style={[styles.editButton, styles.card]} onPress={() => setEditModalVisible(true)}>
+              <Text style={styles.editButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
+            <View style={{ width: '100%', flex: 1, alignItems: 'center', marginTop: 4, flexDirection: 'row', justifyContent: 'space-around' }}>
+              <TouchableOpacity
+                style={[styles.editButton, styles.card]}
+                onPress={() => navigation.navigate('PaymentScreenMerchant')}
+              >
+                <Text style={styles.editButtonText}>Admin Code</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.editButton, styles.card]}
+                onPress={() => navigation.navigate('PaymentScreenUser')}
+              >
+                <Text style={styles.editButtonText}>User Pay</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <Text>You are not logged in.</Text>
+        )}
+        <View style={styles.profileSection}>
+          <Text style={styles.sectionTitle}>Your Subscribed Stations</Text>
+          <FlatList
+            data={subscriptions}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <StationSubscriptionCard station={item.stations} />
+            )}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>You have no subscriptions yet.</Text>
+            }
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingVertical: 8 }}
+          />
+        </View>
+      </ScrollView>
       
       <Modal
         visible={editModalVisible}
@@ -172,7 +192,16 @@ const styles = StyleSheet.create({
   loadingContainer: { 
     flex: 1, 
     justifyContent: 'center', 
-    alignItems: 'center' 
+    alignItems: 'center',
+    backgroundColor: "black", 
+  },
+  card: {
+    backgroundColor: Colors.dark.background,
+    padding: 20,
+    borderRadius: 30,
+    marginBottom: 12,
+    marginRight: 12,
+    elevation: 2,
   },
   topBar: {
     width: '100%',
@@ -242,7 +271,7 @@ const styles = StyleSheet.create({
   statBox: {
     alignItems: 'center',
     padding: 12,
-    backgroundColor: '#222',
+    backgroundColor: Colors.dark.background,
     borderRadius: 10,
     minWidth: 90,
   },

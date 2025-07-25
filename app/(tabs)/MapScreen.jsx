@@ -76,15 +76,6 @@ const MapScreen = () => {
     handleStationSelect(station);
   };
 
-  // Filter stations based on search query
-  // const filteredStations = stations?.filter((station) =>
-  //   station.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   station.address?.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
-
-  // Get top 5 suggestions for autocomplete
-  // const suggestions = filteredStations?.slice(0, 5);
-
   // Handle station selection from autocomplete
   const handleStationSelect = useCallback((station) => {
     setSearchQuery(station.name);
@@ -383,7 +374,7 @@ const MapScreen = () => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007BFF" />
-        <Text>Loading stations...</Text>
+        <Text style={{color: "white"}}>Loading stations...</Text>
       </View>
     );
   }
@@ -562,6 +553,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "black",
   },
   errorContainer: {
     flex: 1,

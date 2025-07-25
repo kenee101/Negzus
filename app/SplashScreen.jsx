@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text } from 'react-native';
-import LottieView from 'lottie-react-native';
+// import LottieView from 'lottie-react-native';
 
 const SplashScreen = () => {
   useEffect(() => {
@@ -11,11 +11,11 @@ const SplashScreen = () => {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <LottieView
+      {/* <LottieView
         source={require('@/assets/images/negzus.jpg')} 
         autoPlay
         loop={false}
-      />
+      /> */}
     </View>
   );
 };

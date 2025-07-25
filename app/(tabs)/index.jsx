@@ -7,7 +7,7 @@ import { useNavigation } from "expo-router"
 import * as Location from 'expo-location';
 import Toast from 'react-native-root-toast';
 import { useStations } from '@/hooks/useStations';
-
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 const alerts = [
   { id: '1', message: 'Fuel restocked at Forte - Ipaja' },
@@ -84,7 +84,7 @@ export default function DashboardScreen() {
     refetch().finally(() => setRefreshing(false));
   }, [refetch]);
 
-  const renderItem = ({ item, navigation }) => {
+  const renderItem = ({ item }) => {
     if (isLoading) {
       return (
         <View style={[styles.card, { alignItems: 'center', justifyContent: 'center', height: 100 }]}>
@@ -103,9 +103,12 @@ export default function DashboardScreen() {
           <Text style={styles.address}>{item.address}</Text>
         </View>
         <View style={styles.availability}>
-          <Text style={{color: "#fff"}}>Fuel: {item.fuel_price ? `₦${item.fuel_price}` : '-'}</Text>
-          <Text style={{color: "#fff"}}>Diesel: {item.diesel_price ? `₦${item.diesel_price}` : '-'}</Text>
-          <Text style={{color: "#fff"}}>Gas: {item.gas_price ? `₦${item.gas_price}` : '-'}</Text>
+          <Text style={{color: "#fff"}}>
+          <FontAwesome6 name="circle-check" size={14} color="green" /> Fuel: {item.fuel_price ? `₦${item.fuel_price}` : '-'}</Text>
+          <Text style={{color: "#fff"}}>
+          <FontAwesome6 name="circle-check" size={14} color="green" /> Diesel: {item.diesel_price ? `₦${item.diesel_price}` : '-'}</Text>
+          <Text style={{color: "#fff"}}>
+          <FontAwesome6 name="circle-check" size={14} color="green" /> Gas: {item.gas_price ? `₦${item.gas_price}` : '-'}</Text>
         </View>
       </TouchableOpacity>
     )

@@ -5,6 +5,7 @@ import { useStations } from '@/hooks/useStations';
 import { Colors } from '@/constants/Colors';
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from 'expo-location';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 const StationListScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -312,13 +313,13 @@ const StationListScreen = () => {
       <Text style={styles.address}>{item.address}</Text>
       <View style={styles.availability}>
         <Text style={styles.availabilityText}>
-          Fuel: {item.fuel_available ? `✅ ₦${item.fuel_price}` : '❌'}
+        <FontAwesome6 name="circle-check" size={14} color="green" /> Fuel: {item.fuel_available ? `₦${item.fuel_price}` : '❌'}
         </Text>
         <Text style={styles.availabilityText}>
-          Diesel: {item.diesel_available ? `✅ ₦${item.diesel_price}` : '❌'}
+        <FontAwesome6 name="circle-check" size={14} color="green" /> Diesel: {item.diesel_available ? `₦${item.diesel_price}` : '❌'}
         </Text>
         <Text style={styles.availabilityText}>
-          Gas: {item.gas_available ? `✅ ₦${item.gas_price}` : '❌'}
+        <FontAwesome6 name="circle-check" size={14} color="green" /> Gas: {item.gas_available ? `₦${item.gas_price}` : '❌'}
         </Text>
       </View>
     </TouchableOpacity>
