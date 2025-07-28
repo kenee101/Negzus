@@ -285,7 +285,7 @@ const StationListScreen = () => {
   if (isLoading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color='#4ade80' />
          <Text style={styles.loaderText}>Loading...</Text>
       </View>
     );
@@ -336,7 +336,7 @@ const StationListScreen = () => {
           onChangeText={setSearchQuery}
         />
         <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilters(true)}>
-          <Ionicons name="filter" size={24} color="#fff" />
+          <Ionicons name="filter" size={24} color="#000" />
         </TouchableOpacity>
       </View>
 
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   filterButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#4ade80',
     padding: 12,
     borderRadius: 8,
   },
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
   },
   distance: {
     fontSize: 14,
-    color: '#007BFF',
+    color: '#4ade80',
     fontWeight: '600',
   },
   address: {
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sliderButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#4ade80',
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sliderButtonText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -510,10 +510,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   checkboxActive: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#4ade80',
   },
   checkboxText: {
-    color: '#fff',
+    color: '#000',
     marginLeft: 8,
   },
   sortButtons: {
@@ -530,10 +530,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sortButtonActive: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#4ade80',
   },
   sortButtonText: {
-    color: '#fff',
+    color: '#000',
   },
   sortOrderButton: {
     backgroundColor: '#333',
@@ -543,10 +543,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sortOrderButtonText: {
-    color: '#fff',
+    color: '#000',
   },
   resetButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: '#4ade80',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   resetButtonText: {
-    color: '#fff',
+    color: '#000',
     fontWeight: '600',
   },
 });

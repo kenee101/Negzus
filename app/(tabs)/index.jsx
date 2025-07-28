@@ -8,6 +8,7 @@ import * as Location from 'expo-location';
 import Toast from 'react-native-root-toast';
 import { useStations } from '@/hooks/useStations';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Entypo from '@expo/vector-icons/Entypo';
 
 const alerts = [
   { id: '1', message: 'Fuel restocked at Forte - Ipaja' },
@@ -104,11 +105,26 @@ export default function DashboardScreen() {
         </View>
         <View style={styles.availability}>
           <Text style={{color: "#fff"}}>
-          <FontAwesome6 name="circle-check" size={14} color="green" /> Fuel: {item.fuel_price ? `₦${item.fuel_price}` : '-'}</Text>
+            {item.fuel_available ? 
+              <FontAwesome6 name="circle-check" size={14} color="green" /> :
+              <Entypo name="circle-with-cross" size={14} color="green" />
+            } 
+            &nbsp; Fuel: {item.fuel_price ? `₦${item.fuel_price}` : '-'}
+          </Text>
           <Text style={{color: "#fff"}}>
-          <FontAwesome6 name="circle-check" size={14} color="green" /> Diesel: {item.diesel_price ? `₦${item.diesel_price}` : '-'}</Text>
+            {item.fuel_available ? 
+              <FontAwesome6 name="circle-check" size={14} color="green" /> :
+              <Entypo name="circle-with-cross" size={14} color="green" />
+            } 
+            &nbsp; Fuel: {item.fuel_price ? `₦${item.fuel_price}` : '-'}
+          </Text>
           <Text style={{color: "#fff"}}>
-          <FontAwesome6 name="circle-check" size={14} color="green" /> Gas: {item.gas_price ? `₦${item.gas_price}` : '-'}</Text>
+            {item.fuel_available ? 
+              <FontAwesome6 name="circle-check" size={14} color="green" /> :
+              <Entypo name="circle-with-cross" size={14} color="green" />
+            } 
+            &nbsp; Fuel: {item.fuel_price ? `₦${item.fuel_price}` : '-'}
+          </Text>
         </View>
       </TouchableOpacity>
     )

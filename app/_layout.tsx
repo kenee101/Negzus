@@ -4,9 +4,10 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { View } from 'react-native';
-// import 'react-native-reanimated';
+import { View } from 'react-native'
+import { PaystackProvider } from 'react-native-paystack-webview';
 import '@/global.css'
+// import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -25,6 +26,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  // console.log(process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY)
 
   // useEffect(() => {
   //   async function getToken() {
@@ -46,23 +48,26 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        {user ? 
-        <Stack screenOptions={{title: 'Negzus', headerBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />}}>
-          <Stack.Screen name="(tabs)" options={{ headerTintColor: Colors.light.tint, }} />
-          <Stack.Screen name="StationDetailScreen" options={{ title: 'Station Details', headerTintColor: Colors.light.tint }}/>
-          <Stack.Screen name="PaymentScreenMerchant" options={{ title: 'Payments', headerTintColor: Colors.light.tint }}/>
-          <Stack.Screen name="PaymentScreenUser" options={{ title: 'Payments', headerTintColor: Colors.light.tint }}/>
-          <Stack.Screen name="+not-found" />
-        </Stack> : 
-        <Stack screenOptions={{title: 'Negzus', headerBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />}}>
-          <Stack.Screen name="LoginScreen" options={{ title: 'Log In', headerTintColor: Colors.light.tint }}/>
-          <Stack.Screen name="SignUpScreen" options={{ title: 'Sign Up', headerTintColor: Colors.light.tint }}/>
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        }
-      </ThemeProvider>
-      <StatusBar style="light" />
+      <PaystackProvider debug={true} currency="NGN" defaultChannels={['card', 'bank']} publicKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY || ''}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          {user ? 
+          <Stack screenOptions={{title: 'Negzus', headerTintColor: '#4ade80', headerBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />}}>
+            <Stack.Screen name="(tabs)" options={{ headerTintColor: '#4ade80' }} />
+            <Stack.Screen name="StationDetailScreen" options={{ title: 'Station Details', headerTintColor: '#4ade80' }}/>
+            <Stack.Screen name="PaymentScreenMerchant" options={{ title: 'Payments', headerTintColor:'#4ade80' }}/>
+            <Stack.Screen name="PaymentScreenUser" options={{ title: 'Payments', headerTintColor: '#4ade80' }}/>
+            <Stack.Screen name="UserProfileManager" options={{ title: 'Profile', headerTintColor: '#4ade80' }}/>
+            <Stack.Screen name="+not-found" />
+          </Stack> : 
+          <Stack screenOptions={{title: 'Negzus', headerTintColor: '#4ade80', headerBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />}}>
+            <Stack.Screen name="LoginScreen" options={{ title: 'Log In', headerTintColor: '#4ade80' }}/>
+            <Stack.Screen name="SignUpScreen" options={{ title: 'Sign Up', headerTintColor: '#4ade80' }}/>
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          }
+        </ThemeProvider>
+        <StatusBar style="light" />
+      </PaystackProvider>
     </QueryClientProvider>
   );
 }

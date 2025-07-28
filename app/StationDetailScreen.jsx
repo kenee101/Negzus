@@ -5,6 +5,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 // import { checkSubscription } from '@/services/api';
 import {useAuth} from '@/hooks/useAuth';
 import { useUserSubscriptions } from '@/hooks/useUserSubscriptions';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Entypo from '@expo/vector-icons/Entypo';
 
 const StationDetailScreen = () => {
   const navigation = useNavigation();
@@ -55,14 +57,14 @@ const StationDetailScreen = () => {
   if (subsLoading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color='#4ade80' />
+        <Text style={{ color: 'white'}}>Loading...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView style={{ backgroundColor: 'black' }} contentContainerStyle={styles.container}>
       {/* <TouchableOpacity onPress={() => navigation.goBack()}>
         <Text style={styles.backButton}>← Back</Text>
       </TouchableOpacity> */}
@@ -87,9 +89,27 @@ const StationDetailScreen = () => {
 
       <View style={styles.availabilitySection}>
         <Text style={styles.availabilityTitle}>Availability:</Text>
-        <Text>Fuel: {station.fuel_available ? `✅ ₦${station.fuel_price}` : '❌'}</Text>
-        <Text>Diesel: {station.diesel_available ? `✅ ₦${station.diesel_price}` : '❌'}</Text>
-        <Text>Gas: {station.gas_available ? `✅ ₦${station.gas_price}` : '❌'}</Text>
+        <Text style={{ color: 'white' }}>
+          {station.fuel_available ? 
+            <FontAwesome6 name="circle-check" size={14} color="green" /> :
+            <Entypo name="circle-with-cross" size={14} color="green" />
+          } 
+          &nbsp; Fuel: {station.fuel_price ? `₦${station.fuel_price}` : '-'}
+        </Text>
+        <Text style={{ color: 'white' }}>
+          {station.diesel_available ? 
+            <FontAwesome6 name="circle-check" size={14} color="green" /> :
+            <Entypo name="circle-with-cross" size={14} color="green" />
+          } 
+          &nbsp; Diesel: {station.diesel_price ? `₦${station.diesel_price}` : '-'}
+        </Text>
+        <Text style={{ color: 'white' }}>
+          {station.gas_available ? 
+            <FontAwesome6 name="circle-check" size={14} color="green" /> :
+            <Entypo name="circle-with-cross" size={14} color="green" />
+          }  
+          &nbsp; Gas: {station.gas_price ? `₦${station.gas_price}` : '-'}
+        </Text>
       </View>
 
       <Text style={styles.lastUpdated}>
@@ -115,6 +135,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     paddingBottom: 40,
+    backgroundColor: '#000'
   },
   backButton: {
     fontSize: 16,
@@ -125,6 +146,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 12,
+    color: 'white',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   map: {
     width: '100%',
@@ -135,14 +160,17 @@ const styles = StyleSheet.create({
   address: {
     fontSize: 16,
     marginBottom: 16,
+    color: 'white',
   },
   availabilitySection: {
     marginBottom: 16,
+    color: 'white',
   },
   availabilityTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
+    color: 'white',
   },
   lastUpdated: {
     fontSize: 12,
@@ -150,24 +178,25 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   directionsButton: {
-    backgroundColor: '#3A5A40',
+    backgroundColor: '#4ade80',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
   },
   directionsText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 16,
+    fontWeight: 'bold',
   },
   subscribeButton: {
-    backgroundColor: '#3A5A40',
+    backgroundColor: '#4ade80',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
   },
   subscribeButtonText: {
-    color: '#fff',
+    color: '#000',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -175,5 +204,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#000',
   },
 });

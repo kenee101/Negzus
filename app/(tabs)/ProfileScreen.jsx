@@ -21,7 +21,7 @@ export default function ProfileScreen() {
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useUserProfile(user?.id);
   const { data: subscriptions, isLoading: subsLoading } = useUserSubscriptions(user?.id);
   
-  const PLACEHOLDER_IMG = `https://ui-avatars.com/api/?name=${profile?.full_name.charAt(0).toUpperCase() || ''}&background=007BFF&color=fff&size=128`;
+  const PLACEHOLDER_IMG = `https://ui-avatars.com/api/?name=${profile?.full_name.charAt(0).toUpperCase() || ''}&background=4ade80&color=000&size=128`;
   
   useEffect(() => {
     if (profile) {
@@ -33,7 +33,7 @@ export default function ProfileScreen() {
   if (profileLoading || subsLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#4ade80" />
         <Text style={{color: "white"}}>Loading...</Text>
       </View>
     );
@@ -103,8 +103,14 @@ export default function ProfileScreen() {
                 <Text style={styles.statLabel}>Joined</Text>
               </View>
             </View>
-            <TouchableOpacity style={[styles.editButton, styles.card]} onPress={() => setEditModalVisible(true)}>
+            {/* <TouchableOpacity style={[styles.editButton, styles.card]} onPress={() => setEditModalVisible(true)}>
               <Text style={styles.editButtonText}>Edit Profile</Text>
+            </TouchableOpacity> */}
+            <TouchableOpacity
+              style={[styles.editButton, styles.card]}
+              onPress={() => navigation.navigate('UserProfileManager')}
+            >
+              <Text style={styles.editButtonText}>App Settings</Text>
             </TouchableOpacity>
             <View style={{ width: '100%', flex: 1, alignItems: 'center', marginTop: 4, flexDirection: 'row', justifyContent: 'space-around' }}>
               <TouchableOpacity
@@ -142,7 +148,7 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
       
-      <Modal
+      {/* <Modal
         visible={editModalVisible}
         animationType="slide"
         transparent={true}
@@ -176,7 +182,7 @@ export default function ProfileScreen() {
             </View>
           </View>
         </View>
-      </Modal>
+      </Modal> */}
     </View>
   );
 }
@@ -219,7 +225,7 @@ const styles = StyleSheet.create({
     borderRadius: 48,
     marginBottom: 16,
     borderWidth: 2,
-    borderColor: '#007BFF',
+    borderColor: '#000',
   },
   profileSection: { 
     marginTop: 20,

@@ -66,9 +66,9 @@ export default function SignUpScreen() {
           {errorMsg && <Text style={styles.error}>{errorMsg}</Text>}
 
           {loading ? (
-            <ActivityIndicator color="#0000ff"/>
+            <ActivityIndicator color="#4ade80"/>
           ) : (
-            <Button title="Sign Up" onPress={handleSignUp} />
+            <Button title="Sign Up" color={'#4ade80'} onPress={handleSignUp} />
           )}
 
           <Text style={styles.loginPrompt}>
@@ -133,7 +133,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
       },
       link: {
-        color: '#007bff',
+        // color: '#007bff',
+        color: '#4ade80',
         fontWeight: 'bold',
     },
 });

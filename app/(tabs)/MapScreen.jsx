@@ -20,6 +20,7 @@ import { Ionicons } from "@expo/vector-icons";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useNavigation } from "expo-router";
 import { useStations } from "@/hooks/useStations";
+import { darkMapStyle, midnightBlueStyle, emeraldThemeStyle, cyberpunkStyle, getMapStyle } from "../../utils/mapStyles";
 
 
 const MapScreen = () => {
@@ -34,6 +35,7 @@ const MapScreen = () => {
   const [routeDistance, setRouteDistance] = useState(null);
   const [routeDuration, setRouteDuration] = useState(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [currentMapStyle, setCurrentMapStyle] = useState('dark'); // Add map style state
   
   const mapRef = useRef(null);
   const inputWidth = useRef(new Animated.Value(1)).current;
@@ -106,7 +108,6 @@ const MapScreen = () => {
       const originStr = `${origin.latitude},${origin.longitude}`;
       const destinationStr = `${destination.latitude},${destination.longitude}`;
       
-      // Replace with your Google Maps API key
       const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY';
       
       const response = await fetch(
@@ -337,6 +338,14 @@ const MapScreen = () => {
     }
   };
 
+  // Map style switcher
+  const toggleMapStyle = () => {
+    const styles = ['dark', 'emerald', 'midnight', 'cyberpunk'];
+    const currentIndex = styles.indexOf(currentMapStyle);
+    const nextIndex = (currentIndex + 1) % styles.length;
+    setCurrentMapStyle(styles[nextIndex]);
+  };
+
   // Handle blur animation
   const handleBlur = () => {
     setIsFocused(false);
@@ -373,7 +382,7 @@ const MapScreen = () => {
   if (isLoading || !location) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007BFF" />
+        <ActivityIndicator size="large" color='#4ade80' />
         <Text style={{color: "white"}}>Loading stations...</Text>
       </View>
     );
@@ -401,6 +410,7 @@ const MapScreen = () => {
               <TextInput
                 style={[styles.searchInput, isFocused && styles.searchInputFocused]}
                 placeholder="Search gas stations..."
+                placeholderTextColor="rgba(255, 255, 255, 0.7)"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 onFocus={handleFocus}
@@ -455,7 +465,28 @@ const MapScreen = () => {
           </View>
         )}
 
-        {/* Map */}
+        {/* Map Style Toggle Button */}
+        <Pressable
+          style={{
+            position: 'absolute',
+            bottom: 220,
+            right: 20,
+            backgroundColor: '#000',
+            borderRadius: 25,
+            padding: 12,
+            zIndex: 1001,
+            shadowColor: "#000",
+            shadowOpacity: 0.1,
+            shadowOffset: { width: 0, height: 2 },
+            shadowRadius: 4,
+            elevation: 3,
+          }}
+          onPress={toggleMapStyle}
+        >
+          <Ionicons name="color-palette" size={24} color="#fff" />
+        </Pressable>
+
+        {/* My Location Button */}
         <Pressable
           style={{
             position: 'absolute',
@@ -480,6 +511,7 @@ const MapScreen = () => {
           ref={mapRef}
           style={styles.map}
           region={region}
+          customMapStyle={getMapStyle(currentMapStyle)}
           zoomEnabled
           zoomControlEnabled
           showsUserLocation
@@ -507,22 +539,17 @@ const MapScreen = () => {
                   styles.customMarker,
                   isSelected && styles.selectedMarker
                 ]}>
-                  {/* <Ionicons 
-                    name="car" 
-                    size={isSelected ? 24 : 20} 
-                    color={isSelected ? "#007BFF" : "#000"} 
-                  /> */}
                   <FontAwesome5 
                   name="gas-pump" 
                   size={isSelected ? 24 : 20} 
                   color={isSelected ? "#fff" : "#000"} 
                   />
-                  <Text style={[
+                  {/* <Text style={[
                     styles.markerText,
                     isSelected && styles.selectedMarkerText
                   ]}>
                     ₦{station.fuel_price}
-                  </Text>
+                  </Text> */}
                 </View>
               </Marker>
             );
@@ -575,7 +602,8 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   searchContainer: {
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
+    backgroundColor: "#000",
     borderRadius: 12,
     paddingHorizontal: 15,
     paddingVertical: 12,
@@ -591,11 +619,11 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     fontSize: 16,
-    color: '#333',
+    color: '#fff',
   },
   searchInputFocused: {
     borderBottomWidth: 2,
-    borderBottomColor: "#000",
+    borderBottomColor: "#fff",
   },
   clearButton: {
     padding: 5,

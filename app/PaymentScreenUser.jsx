@@ -6,21 +6,35 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  Button,
   ScrollView,
 } from 'react-native';
+import { useNavigation } from 'expo-router';
 import { CameraView, Camera } from 'expo-camera';
-import { Paystack } from 'react-native-paystack-webview';
+import { usePaystack } from 'react-native-paystack-webview';
+import { UserProfileStorage, PaymentHistoryStorage } from '../utils/storage';
+
 
 export default function PaymentScreenUser() {
+  const navigation = useNavigation();
   const [hasPermission, setHasPermission] = useState(null);
   const [scannedData, setScannedData] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
-  const [showPaystack, setShowPaystack] = useState(false);
+  // const [showPaystack, setShowPaystack] = useState(false);
   const [isScanning, setIsScanning] = useState(true);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [userProfile, setUserProfile] = useState({
+    email: 'nexus@gmail.com',
+    name: 'Nexus',
+    phone: '+2347080345674'
+  });
+  const { popup } = usePaystack();
 
   useEffect(() => {
     requestCameraPermission();
+    loadUserProfile();
+    loadPaymentHistory();
   }, []);
 
   const requestCameraPermission = async () => {
@@ -29,6 +43,68 @@ export default function PaymentScreenUser() {
       setHasPermission(status === 'granted');
     } catch (error) {
       Alert.alert('Error', 'Camera permission required');
+    }
+  };
+
+  const loadPaymentHistory = async () => {
+    try {
+      const history = await PaymentHistoryStorage.loadPaymentHistory();
+      setPaymentHistory(history);
+    } catch (error) {
+      console.error('Error loading payment history:', error);
+    }
+  };
+
+  const loadUserProfile = async () => {
+    try {
+      const profile = await UserProfileStorage.loadUserProfile();
+      if (profile) {
+        setUserProfile(profile);
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
+
+  const saveUserProfile = async (newProfile) => {
+    try {
+      const result = await UserProfileStorage.saveUserProfile(newProfile);
+      if (result.success) {
+        setUserProfile(newProfile);
+        console.log('User profile saved successfully');
+      }
+    } catch (error) {
+      console.error('Error saving user profile:', error);
+    }
+  };
+
+  const updateUserProfile = async (updates) => {
+    try {
+      const result = await UserProfileStorage.updateUserProfile(updates);
+      if (result.success) {
+        setUserProfile(result.profile);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      return false;
+    }
+  };
+
+  const clearUserProfile = async () => {
+    try {
+      const result = await UserProfileStorage.clearUserProfile();
+      if (result.success) {
+        setUserProfile({
+          email: '',
+          name: '',
+          phone: ''
+        });
+        console.log('User profile cleared');
+      }
+    } catch (error) {
+      console.error('Error clearing user profile:', error);
     }
   };
 
@@ -42,7 +118,10 @@ export default function PaymentScreenUser() {
       
       // Validate payment data structure
       if (paymentData.id && paymentData.amount && paymentData.merchant) {
-        setScannedData(paymentData);
+        setScannedData({
+          ...paymentData,
+          timestamp: new Date().toISOString()
+        });
         setShowPayment(true);
       } else {
         Alert.alert('Error', 'Invalid payment QR code');
@@ -53,41 +132,157 @@ export default function PaymentScreenUser() {
       setIsScanning(true);
     }
   };
+    
+  const payNow = (data) => {
+    popup.checkout({
+      email: data.email,
+      amount: data.amount,
+      reference: data.reference,
+      // plan: 'PLN_example123',
+      // invoice_limit: 3,
+      // subaccount: 'SUB_abc123',
+      // split_code: 'SPL_def456',
+      // split: {
+      //   type: 'percentage',
+      //   bearer_type: 'account',
+      //   subaccounts: [
+      //     { subaccount: 'ACCT_abc', share: 60 },
+      //     { subaccount: 'ACCT_xyz', share: 40 }
+      //   ]
+      // },
+      metadata: {
+        custom_fields: [
+          {
+            display_name: 'Order ID',
+            variable_name: 'order_id',
+            value: 'OID1234'
+          }
+        ]
+      },
+      onSuccess: (res) => {
+        console.log('Success:', res);
+        setScannedData(null);
+        setIsScanning(true);
+        setShowPayment(false);
+        setIsProcessing(false);
+        // handlePaymentSuccess(res);
+        navigation.navigate('index')
+      },
+      onCancel: () => {
+        console.log('User cancelled')
+        handlePaymentCancel()
+        // setIsProcessing(false);
+      },
+      onLoad: (res) => console.log('WebView Loaded:', res),
+      onError: (err) => console.log('WebView Error:', err)
+    });
+  };
 
   const processPayment = () => {
     if (!scannedData) return;
     
     setShowPayment(false);
-    setShowPaystack(true);
+    setIsProcessing(true)
+    payNow(scannedData);
   };
 
-  const handlePaymentSuccess = (response) => {
-    setShowPaystack(false);
-    Alert.alert('Success', 'Payment completed successfully!');
+  const handlePaymentSuccess = async (response) => {
+    setIsProcessing(false);
     
-    // Add to payment history
-    const historyItem = {
-      ...scannedData,
-      status: 'completed',
-      transactionId: response.data.reference,
-      completedAt: new Date().toISOString(),
-    };
+    try {
+      // Verify payment on your backend
+      const verification = await verifyPaymentOnBackend(response.data.reference);
+      
+      if (verification.success) {
+        Alert.alert('Success', 'Payment completed successfully! You can now collect your fuel.');
+        
+        // Add to payment history
+        const historyItem = {
+          ...scannedData,
+          status: 'completed',
+          transactionId: response.data.reference,
+          completedAt: new Date().toISOString(),
+          amount: scannedData.amount,
+          // fuelQuantity: scannedData.fuelQuantity,
+          stationName: scannedData.merchant,
+        };
+        
+        const result = await PaymentHistoryStorage.addPaymentToHistory(historyItem);
+        if (result.success) {
+          setPaymentHistory(result.history);
+        }
+        
+        // Generate receipt or pump authorization code
+        showReceiptModal(historyItem);
+      } else {
+        Alert.alert('Error', 'Payment verification failed. Please contact support.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to verify payment. Please contact support.');
+    }
     
-    setPaymentHistory(prev => [historyItem, ...prev]);
-    setScannedData(null);
-    setIsScanning(true);
+    resetScanner();
   };
+
+  const showReceiptModal = (transaction) => {
+    Alert.alert(
+      'Payment Receipt',
+      `Transaction ID: ${transaction.transactionId}\n` +
+      `Station: ${transaction.stationName}\n` +
+      `Amount: ₦${transaction.amount.toLocaleString()}\n` +
+      // `Fuel: ${transaction.fuelQuantity}L of ${transaction.fuelType}\n`
+      + `Date: ${new Date(transaction.completedAt).toLocaleString()}`,
+      [
+        { text: 'OK', onPress: () => {} }
+      ]
+    );
+  };
+
+  const verifyPaymentOnBackend = async (reference) => {
+    try {
+      // Replace with your actual backend endpoint
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/payment/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reference }),
+      });
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Backend verification error:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
 
   const handlePaymentCancel = () => {
-    setShowPaystack(false);
+    setShowPayment(false);
     Alert.alert('Cancelled', 'Payment was cancelled');
     setScannedData(null);
     setIsScanning(true);
+    setIsProcessing(false)
   };
 
-  const cancelPayment = () => {
-    setShowPayment(false);
+  const handlePaymentError = (error) => {
+    setIsProcessing(false);
+    Alert.alert('Error', `Payment failed: ${error.message || 'Unknown error'}`);
+    resetScanner();
+  };
+
+  // const handlePaymentCancel = () => {
+  //   setShowPayment(false);
+  //   setScannedData(null);
+  //   setIsScanning(true);
+  // };
+
+  const resetScanner = () => {
     setScannedData(null);
+    setIsScanning(true);
+  };
+
+  const retryScanning = () => {
     setIsScanning(true);
   };
 
@@ -127,6 +322,11 @@ export default function PaymentScreenUser() {
           <Text style={styles.scannerText}>
             {isScanning ? 'Point camera at QR code' : 'Processing...'}
           </Text>
+          {/* {!isScanning && (
+            <TouchableOpacity style={styles.retryButton} onPress={retryScanning}>
+              <Text style={styles.retryButtonText}>Scan Again</Text>
+            </TouchableOpacity>
+          )} */}
         </View>
       </View>
 
@@ -168,27 +368,13 @@ export default function PaymentScreenUser() {
               <TouchableOpacity style={styles.confirmButton} onPress={processPayment}>
                 <Text style={styles.confirmButtonText}>Confirm Payment</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={cancelPayment}>
+              <TouchableOpacity style={styles.cancelButton} onPress={handlePaymentCancel}>
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-
-      {/* Paystack Payment */}
-      {showPaystack && scannedData && (
-        <Paystack
-          paystackKey="pk_test_your_public_key_here" // Replace with your actual public key
-          amount={scannedData.amount * 100} // Paystack expects amount in kobo
-          billingEmail={scannedData.email}
-          reference={scannedData.reference}
-          activityIndicatorColor="green"
-          onCancel={handlePaymentCancel}
-          onSuccess={handlePaymentSuccess}
-          autoStart={true}
-        />
-      )}
     </View>
   );
 }
@@ -367,6 +553,7 @@ const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    marginTop: 20,
   },
   shareButton: {
     backgroundColor: '#28a745',
@@ -379,13 +566,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   confirmButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#4ade80',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
   },
   confirmButtonText: {
-    color: '#fff',
+    color: '#000',
     fontWeight: 'bold',
   },
   closeButton: {
@@ -399,7 +586,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   cancelButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: '#000',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,

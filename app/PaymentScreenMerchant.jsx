@@ -27,7 +27,7 @@ export default function PaymentScreenMerchant() {
 
   // Generate unique payment reference
   const generateReference = () => {
-    return `PAY-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+    return `NEG_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
   };
 
   // Generate QR Code with payment details
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   shareButtonText: {
-    color: '#fff',
+    color: '#000',
     fontWeight: 'bold',
   },
   confirmButton: {
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   closeButton: {
-    backgroundColor: '#6c757d',
+    backgroundColor: '#000',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
