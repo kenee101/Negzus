@@ -12,7 +12,7 @@ import '@/global.css'
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Colors } from '@/constants/Colors';
-import { registerForPushNotificationsAsync } from '@/utils/notifications';
+import { registerForPushNotificationsAsync } from '@/utils/pushNotificationService';
 import { useAuth } from "@/hooks/useAuth";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -57,6 +57,8 @@ export default function RootLayout() {
             <Stack.Screen name="PaymentScreenMerchant" options={{ title: 'Payments', headerTintColor:'#4ade80' }}/>
             <Stack.Screen name="PaymentScreenUser" options={{ title: 'Payments', headerTintColor: '#4ade80' }}/>
             <Stack.Screen name="UserProfileManager" options={{ title: 'Profile', headerTintColor: '#4ade80' }}/>
+            <Stack.Screen name="FuelManagementScreen" options={{ title: 'Updates', headerTintColor: '#4ade80' }}/>
+            <Stack.Screen name="AdminPanelScreen" options={{ title: 'Admin', headerTintColor: '#4ade80' }}/>
             <Stack.Screen name="+not-found" />
           </Stack> : 
           <Stack screenOptions={{title: 'Negzus', headerTintColor: '#4ade80', headerBackground: () => <View style={{ flex: 1, backgroundColor: Colors.dark.background }} />}}>

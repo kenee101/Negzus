@@ -2,7 +2,6 @@ import { View, Text, FlatList, StyleSheet, ActivityIndicator, Button, Image, Mod
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUserSubscriptions } from '@/hooks/useUserSubscriptions';
 import { useAuth } from '@/hooks/useAuth';
-import { useRoleBasedAccess, USER_ROLES, roleUtils } from '@/hooks/useRoleBasedAccess';
 import { Colors } from '@/constants/Colors';
 import StationSubscriptionCard from '@/components/station/StationSubscriptionCard';
 import { CommonActions } from '@react-navigation/native'
@@ -10,6 +9,7 @@ import { useNavigation } from 'expo-router';
 import { supabase } from '@/services/supabase';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+
 
 export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
@@ -20,15 +20,6 @@ export default function ProfileScreen() {
   const { user } = useAuth();
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useUserProfile(user?.id);
   const { data: subscriptions, isLoading: subsLoading } = useUserSubscriptions(user?.id);
-  const {
-    userRole,
-    managedStations,
-    isAdmin,
-    isStationManager,
-    isBusiness,
-    hasPermission,
-    loading: rbacLoading
-  } = useRoleBasedAccess();
   
   const PLACEHOLDER_IMG = `https://ui-avatars.com/api/?name=${profile?.full_name.charAt(0).toUpperCase() || ''}&background=4ade80&color=000&size=128`;
   
@@ -39,7 +30,7 @@ export default function ProfileScreen() {
     }
   }, [profile]);
   
-  if (profileLoading || subsLoading || rbacLoading) {
+  if (profileLoading || subsLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#4ade80" />
@@ -79,17 +70,14 @@ export default function ProfileScreen() {
     refetchProfile();
   };
 
-  const navigateToFuelManagement = (stationId) => {
-    navigation.navigate('FuelManagementScreen', { stationId });
-  };
-
   // Stats
+  // console.log(profile)
   const joinDate = profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A';
   const subsCount = subscriptions ? subscriptions.length : 0;
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ alignItems: 'center', paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ alignItems: 'center', paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         <View style={styles.topBar}>
           <TouchableOpacity onPress={handleLogout} style={styles.logoutIconButton}>
             <Ionicons name="log-out-outline" size={28} color="#dc3545" />
@@ -104,14 +92,6 @@ export default function ProfileScreen() {
             <Text style={styles.text}>Welcome, {profile?.full_name}</Text>
             <Text style={styles.email}>{profile?.email}</Text>
             <Text style={styles.phone}>{profile?.phone_number || 'No Phone Number'}</Text>
-            
-            {/* Role Badge */}
-            <View style={[styles.roleBadge, { backgroundColor: Colors.dark.background }]}>
-              <Text style={styles.roleBadgeText}>
-                {roleUtils.getRoleDisplayName(userRole)}
-              </Text>
-            </View>
-
             {/* Stats */}
             <View style={styles.statsRow}>
               <View style={styles.statBox}>
@@ -122,89 +102,40 @@ export default function ProfileScreen() {
                 <Text style={styles.statValue}>{joinDate}</Text>
                 <Text style={styles.statLabel}>Joined</Text>
               </View>
-              {isStationManager() && (
-                <View style={styles.statBox}>
-                  <Text style={styles.statValue}>{managedStations.length}</Text>
-                  <Text style={styles.statLabel}>Stations</Text>
-                </View>
-              )}
             </View>
-
-            {/* Role-based Action Buttons */}
-            <View style={styles.actionButtonsContainer}>
-              {/* Common actions */}
+            {/* <TouchableOpacity style={[styles.editButton, styles.card]} onPress={() => setEditModalVisible(true)}>
+              <Text style={styles.editButtonText}>Edit Profile</Text>
+            </TouchableOpacity> */}
+            <TouchableOpacity
+              style={[styles.editButton, styles.card]}
+              onPress={() => navigation.navigate('UserProfileManager')}
+            >
+              <Text style={styles.editButtonText}>App Settings</Text>
+            </TouchableOpacity>
+            <View style={{ width: '100%', flex: 1, alignItems: 'center', marginTop: 4, flexDirection: 'row', justifyContent: 'space-around' }}>
               <TouchableOpacity
-                style={[styles.actionButton, styles.primaryButton]}
-                onPress={() => navigation.navigate('UserProfileManager')}
+                style={[styles.editButton, styles.card]}
+                onPress={() => navigation.navigate('PaymentScreenMerchant')}
               >
-                <Ionicons name="settings" size={20} color="#fff" />
-                <Text style={styles.actionButtonText}>App Settings</Text>
+                <Text style={styles.editButtonText}>Admin Code</Text>
               </TouchableOpacity>
-
-              {/* Admin-specific actions */}
-              {isAdmin() && (
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.adminButton]}
-                  onPress={() => navigation.navigate('AdminPanelScreen')}
-                >
-                  <Ionicons name="shield-checkmark" size={20} color="#fff" />
-                  <Text style={styles.actionButtonText}>Admin Panel</Text>
-                </TouchableOpacity>
-              )}
-
-              {/* Station Manager actions */}
-              {(isStationManager() || isAdmin()) && managedStations.length > 0 && (
-                <View style={styles.stationManagerSection}>
-                  <Text style={styles.sectionTitle}>Manage Your Stations</Text>
-                  {managedStations.map(station => (
-                    <TouchableOpacity
-                      key={station.id}
-                      style={[styles.actionButton, styles.stationButton]}
-                      onPress={() => navigateToFuelManagement(station.id)}
-                    >
-                      <Ionicons name="business" size={20} color="#fff" />
-                      <Text style={styles.actionButtonText}>{station.name}</Text>
-                      <Ionicons name="chevron-forward" size={16} color="#fff" />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-
-              {/* Business-specific actions */}
-              {isBusiness() && (
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.businessButton]}
-                  onPress={() => navigation.navigate('BusinessDashboard')}
-                >
-                  <Ionicons name="analytics" size={20} color="#fff" />
-                  <Text style={styles.actionButtonText}>Business Dashboard</Text>
-                </TouchableOpacity>
-              )}
-
-              {/* Payment screens for testing */}
-              <View style={styles.paymentButtonsRow}>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.paymentButton]}
-                  onPress={() => navigation.navigate('PaymentScreenMerchant')}
-                >
-                  <Ionicons name="card" size={20} color="#fff" />
-                  <Text style={styles.actionButtonText}>Admin Code</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.paymentButton]}
-                  onPress={() => navigation.navigate('PaymentScreenUser')}
-                >
-                  <Ionicons name="wallet" size={20} color="#fff" />
-                  <Text style={styles.actionButtonText}>User Pay</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity
+                style={[styles.editButton, styles.card]}
+                onPress={() => navigation.navigate('PaymentScreenUser')}
+              >
+                <Text style={styles.editButtonText}>User Pay</Text>
+              </TouchableOpacity>
             </View>
+            {/* <TouchableOpacity
+              style={[styles.editButton, styles.card]}
+              onPress={() => navigation.navigate('FuelManagementScreen')}
+            >
+              <Text style={styles.editButtonText}>Fuel Management</Text>
+            </TouchableOpacity> */}
           </>
         ) : (
           <Text>You are not logged in.</Text>
         )}
-
-        {/* Subscribed Stations Section */}
         <View style={styles.profileSection}>
           <Text style={styles.sectionTitle}>Your Subscribed Stations</Text>
           <FlatList
@@ -223,8 +154,7 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
       
-      {/* Edit Profile Modal */}
-      <Modal
+      {/* <Modal
         visible={editModalVisible}
         animationType="slide"
         transparent={true}
@@ -258,7 +188,7 @@ export default function ProfileScreen() {
             </View>
           </View>
         </View>
-      </Modal>
+      </Modal> */}
     </View>
   );
 }
@@ -323,17 +253,6 @@ const styles = StyleSheet.create({
     color: '#fff', 
     marginBottom: 8,
   },
-  roleBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginBottom: 12,
-  },
-  roleBadgeText: {
-    color: '#4ade80',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   sectionTitle: { 
     marginTop: 20, 
     fontSize: 18, 
@@ -359,69 +278,48 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 12,
-    gap: 16,
+    gap: 24,
   },
   statBox: {
     alignItems: 'center',
     padding: 12,
     backgroundColor: Colors.dark.background,
     borderRadius: 10,
-    minWidth: 80,
+    minWidth: 90,
   },
   statValue: {
     color: '#4ade80',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   statLabel: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 2,
   },
-  actionButtonsContainer: {
-    width: '100%',
-    gap: 12,
-    marginTop: 16,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+  editButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    paddingHorizontal: 24,
     borderRadius: 8,
-    gap: 8,
+    marginBottom: 8,
   },
-  primaryButton: {
-    backgroundColor: Colors.dark.background,
-  },
-  adminButton: {
-    backgroundColor: Colors.dark.background,
-  },
-  stationButton: {
-    backgroundColor: Colors.dark.background,
-    justifyContent: 'space-between',
-  },
-  businessButton: {
-    backgroundColor: Colors.dark.background,
-  },
-  paymentButton: {
-    backgroundColor: Colors.dark.background,
-    flex: 1,
-  },
-  actionButtonText: {
+  editButtonText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: 16,
   },
-  stationManagerSection: {
-    width: '100%',
-    gap: 8,
+  logoutButton: {
+    backgroundColor: '#dc3545',
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginBottom: 8,
   },
-  paymentButtonsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
+  logoutButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
   },
   modalOverlay: {
     flex: 1,

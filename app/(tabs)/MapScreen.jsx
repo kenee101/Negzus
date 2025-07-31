@@ -18,13 +18,14 @@ import {
 import MapView, { Marker, Polyline, Callout, PROVIDER_GOOGLE } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { useStations } from "@/hooks/useStations";
 import { darkMapStyle, midnightBlueStyle, emeraldThemeStyle, cyberpunkStyle, getMapStyle } from "../../utils/mapStyles";
 
 
 const MapScreen = () => {
   const navigation = useNavigation();
+  const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -101,6 +102,21 @@ const MapScreen = () => {
     
     Keyboard.dismiss();
   }, [location]);
+
+  // Navigate to fuel management
+  const navigateToFuelManagement = (stationId) => {
+    console.log('Navigating to FuelManagementScreen with stationId:', stationId);
+    try {
+      router.push({
+        pathname: '/FuelManagementScreen',
+        params: { stationId: stationId }
+      });
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback to navigation.navigate
+      navigation.navigate('FuelManagementScreen', { stationId: stationId });
+    }
+  };
 
   // Calculate route between two points using Google Directions API
   const calculateRoute = async (origin, destination) => {
@@ -446,10 +462,19 @@ const MapScreen = () => {
           </Pressable>
           
           {selectedStation && (
-            <Pressable style={styles.actionButton} onPress={startNavigation}>
-              <Ionicons name="navigate" size={20} color="#007BFF" />
-              <Text style={styles.actionButtonText}>Navigate</Text>
-            </Pressable>
+            <>
+              <Pressable style={styles.actionButton} onPress={startNavigation}>
+                <Ionicons name="navigate" size={20} color="#007BFF" />
+                <Text style={styles.actionButtonText}>Navigate</Text>
+              </Pressable>
+              <Pressable 
+                style={[styles.actionButton, styles.manageButton]} 
+                onPress={() => navigateToFuelManagement(selectedStation.id)}
+              >
+                <Ionicons name="settings" size={20} color="#4ade80" />
+                <Text style={[styles.actionButtonText, styles.manageButtonText]}>Manage</Text>
+              </Pressable>
+            </>
           )}
         </View>
 
@@ -697,6 +722,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#007BFF',
     fontWeight: '600',
+  },
+  manageButton: {
+    backgroundColor: '#1a1a1a',
+    borderWidth: 1,
+    borderColor: '#4ade80',
+  },
+  manageButtonText: {
+    color: '#4ade80',
   },
   routeInfo: {
     position: 'absolute',
