@@ -5,37 +5,37 @@ import { Platform } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
 
-export async function registerForPushNotificationsAsync() {
-  let token;
+// export async function registerForPushNotificationsAsync() {
+//   let token;
   
-  if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== 'granted') {
-      alert('Failed to get push token!');
-      return;
-    }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
-    console.log('Expo Push Token:', token);
-  } else {
-    alert('Must use physical device for Push Notifications');
-  }
+//   if (Device.isDevice) {
+//     const { status: existingStatus } = await Notifications.getPermissionsAsync();
+//     let finalStatus = existingStatus;
+//     if (existingStatus !== 'granted') {
+//       const { status } = await Notifications.requestPermissionsAsync();
+//       finalStatus = status;
+//     }
+//     if (finalStatus !== 'granted') {
+//       alert('Failed to get push token!');
+//       return;
+//     }
+//     token = (await Notifications.getExpoPushTokenAsync()).data;
+//     console.log('Expo Push Token:', token);
+//   } else {
+//     alert('Must use physical device for Push Notifications');
+//   }
 
-  if (Platform.OS === 'android') {
-    Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
-  }
+//   if (Platform.OS === 'android') {
+//     Notifications.setNotificationChannelAsync('default', {
+//       name: 'default',
+//       importance: Notifications.AndroidImportance.MAX,
+//       vibrationPattern: [0, 250, 250, 250],
+//       lightColor: '#FF231F7C',
+//     });
+//   }
 
-  return token;
-}
+//   return token;
+// }
 
 ////////////////////////////////////////
 // Configure how notifications are handled when the app is in the foreground
@@ -393,7 +393,8 @@ class PushNotificationService {
   }
 }
 
-export default new PushNotificationService();
+const pushNotificationService = new PushNotificationService();
+export default pushNotificationService;
 
 // Hook for using push notifications in components
 export function usePushNotifications() {
@@ -402,32 +403,32 @@ export function usePushNotifications() {
 
   useEffect(() => {
     if (user?.id && !isInitialized) {
-      PushNotificationService.initialize(user.id).then((success) => {
+      pushNotificationService.initialize(user.id).then((success) => {
         setIsInitialized(success);
       });
     }
 
     return () => {
       if (isInitialized) {
-        PushNotificationService.cleanup();
+        pushNotificationService.cleanup();
       }
     };
   }, [user?.id]);
 
   const sendToStation = async (stationId, title, message, data = {}) => {
-    return await PushNotificationService.sendNotificationToStation(stationId, title, message, data);
+    return await pushNotificationService.sendNotificationToStation(stationId, title, message, data);
   };
 
   const sendToUser = async (userId, title, message, data = {}) => {
-    return await PushNotificationService.sendNotificationToUser(userId, title, message, data);
+    return await pushNotificationService.sendNotificationToUser(userId, title, message, data);
   };
 
   const scheduleLocal = async (title, message, seconds = 1) => {
-    return await PushNotificationService.scheduleLocalNotification(title, message, seconds);
+    return await pushNotificationService.scheduleLocalNotification(title, message, seconds);
   };
 
   const cancelAll = async () => {
-    return await PushNotificationService.cancelAllScheduledNotifications();
+    return await pushNotificationService.cancelAllScheduledNotifications();
   };
 
   return {

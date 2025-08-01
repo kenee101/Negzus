@@ -12,16 +12,20 @@ import '@/global.css'
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Colors } from '@/constants/Colors';
-import { registerForPushNotificationsAsync } from '@/utils/pushNotificationService';
+// import { registerForPushNotificationsAsync } from '@/utils/pushNotificationService';
+import { usePushNotifications } from '@/utils/pushNotificationService';
+import FuelNotificationHandler from '@/services/FuelNotificationHandler';
+
 import { useAuth } from "@/hooks/useAuth";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const { user, loading } = useAuth();
   const colorScheme = useColorScheme();
   const queryClient = new QueryClient();
-  const { user, loading } = useAuth();
+  const { isInitialized } = usePushNotifications();
   // console.log(user)
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),

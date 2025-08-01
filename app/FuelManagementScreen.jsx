@@ -18,17 +18,20 @@ import { supabase } from '@/services/supabase';
 import { Colors } from '@/constants/Colors';
 import { useLocalSearchParams } from 'expo-router';
 import { useNavigation } from 'expo-router';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const FUEL_TYPES = [
   { 
     key: 'fuel', 
-    label: 'Petrol', 
+    type: 'fuel',
+    label: 'Fuel', 
     icon: 'car',
     availableField: 'fuel_available',
     priceField: 'fuel_price'
   },
   { 
     key: 'diesel', 
+    type: 'diesel',
     label: 'Diesel', 
     icon: 'bus',
     availableField: 'diesel_available',
@@ -36,6 +39,7 @@ const FUEL_TYPES = [
   },
   { 
     key: 'gas', 
+    type: 'gas',
     label: 'Gas', 
     icon: 'flame',
     availableField: 'gas_available',
@@ -43,6 +47,7 @@ const FUEL_TYPES = [
   },
   { 
     key: 'kerosene', 
+    type: 'kerosene',
     label: 'Kerosene', 
     icon: 'water',
     availableField: 'kerosene_available',
@@ -63,13 +68,25 @@ export default function FuelManagementScreen() {
   const [selectedFuel, setSelectedFuel] = useState(null);
   const [editPrice, setEditPrice] = useState('');
   const [editAvailable, setEditAvailable] = useState(true);
-  const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const { notifications, error, isLoading, refetch } = useNotifications(stationId);
+
+  // Debug notifications
+  // useEffect(() => {
+  //   console.log('FuelManagementScreen - notifications changed:', {
+  //     count: notifications?.length || 0,
+  //     isLoading,
+  //     error,
+  //     stationId,
+  //     notifications: notifications?.slice(0, 3)
+  //   });
+  // }, [notifications, isLoading, error, stationId]);
 
   useEffect(() => {
     if (stationId) {
       loadStationData();
-      loadNotifications();
+      refetch();
     }
   }, [stationId]);
 
@@ -92,21 +109,22 @@ export default function FuelManagementScreen() {
     }
   };
 
-  const loadNotifications = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('station_id', stationId)
-        .order('created_at', { ascending: false })
-        .limit(20);
+  // const loadNotifications = async () => {
+  //   try {
+  //     const { data, error } = await supabase
+  //       .from('notifications')
+  //       .select('*')
+  //       .eq('station_id', stationId)
+  //       .order('last_updated', { ascending: false })
+  //       .limit(20);
 
-      if (error) throw error;
-      setNotifications(data || []);
-    } catch (error) {
-      console.error('Error loading notifications:', error);
-    }
-  };
+  //     if (error) throw error;
+  //     setNotifications(data || []);
+  //     console.log(data)
+  //   } catch (error) {
+  //     console.error('Error loading notifications:', error);
+  //   }
+  // };
 
   const handleEditFuel = (fuelType) => {
     const fuelData = {
@@ -136,30 +154,38 @@ export default function FuelManagementScreen() {
       const updateData = {
         [selectedFuel.priceField]: price,
         [selectedFuel.availableField]: editAvailable,
-        last_updated: new Date().toISOString()
+        last_updated: new Date().toISOString(),
+        managed_by: user.id
       };
+
+      // console.log(updateData)
+      // console.log(user.id)
+      // console.log(selectedFuel.type)
 
       const { error } = await supabase
         .from('stations')
         .update(updateData)
         .eq('id', stationId);
 
+      // console.log(error)
+
       if (error) throw error;
 
       // Create notifications for significant changes
-      await createNotificationsForChanges(
-        selectedFuel.type,
-        selectedFuel.label,
-        oldPrice,
-        price,
-        oldAvailable,
-        editAvailable
-      );
+      // await createNotificationsForChanges(
+      //   selectedFuel.type,
+      //   selectedFuel.label,
+      //   oldPrice,
+      //   price,
+      //   oldAvailable,
+      //   editAvailable
+      // );
 
       Alert.alert('Success', 'Fuel information updated successfully');
       setEditModalVisible(false);
       loadStationData();
-      loadNotifications();
+      refetch();
+      // console.log(notifications)
     } catch (error) {
       console.error('Error saving fuel data:', error);
       Alert.alert('Error', 'Failed to update fuel information');
@@ -168,59 +194,96 @@ export default function FuelManagementScreen() {
     }
   };
 
-  const createNotificationsForChanges = async (fuelType, fuelLabel, oldPrice, newPrice, oldAvailable, newAvailable) => {
-    const notifications = [];
+  // const createNotificationsForChanges = async (fuelType, fuelLabel, oldPrice, newPrice, oldAvailable, newAvailable) => {
+  //   // Validate user exists and has an ID
+  //   if (!user || !user.id) {
+  //     console.error('User not authenticated or missing ID');
+  //     return;
+  //   }
 
-    // Check if fuel availability changed
-    if (oldAvailable !== newAvailable) {
-      if (newAvailable) {
-        // Fuel became available
-        notifications.push({
-          station_id: stationId,
-          title: 'Fuel Restocked! ⛽',
-          message: `${fuelLabel} is now available at this station.`,
-          notification_type: 'fuel_restock',
-          fuel_type: fuelType,
-          created_by: user.id
-        });
-      } else {
-        // Fuel became unavailable
-        notifications.push({
-          station_id: stationId,
-          title: 'Fuel Out of Stock ❌',
-          message: `${fuelLabel} is currently out of stock at this station.`,
-          notification_type: 'fuel_out_of_stock',
-          fuel_type: fuelType,
-          created_by: user.id
-        });
-      }
-    }
+  //   const notifications = [];
+  //   // const currentTime = new Date().toISOString();
 
-    // Check for significant price changes (more than 5% or 10 naira)
-    if (oldPrice > 0 && Math.abs(oldPrice - newPrice) > Math.max(oldPrice * 0.05, 10)) {
-      notifications.push({
-        station_id: stationId,
-        title: 'Price Update 💰',
-        message: `${fuelLabel} price updated from ₦${oldPrice} to ₦${newPrice}`,
-        notification_type: 'price_update',
-        fuel_type: fuelType,
-        created_by: user.id
-      });
-    }
+  //   // Check if fuel availability changed
+  //   if (oldAvailable !== newAvailable) {
+  //     if (newAvailable) {
+  //       // Fuel became available
+  //       notifications.push({
+  //         station_id: stationId,
+  //         title: 'Restocked!',
+  //         message: `${fuelLabel} is now available at this station.`,
+  //         notification_type: 'fuel_restock',
+  //         fuel_type: fuelType,
+  //         created_by: user.id
+  //       });
+  //     } else {
+  //       // Fuel became unavailable
+  //       notifications.push({
+  //         station_id: stationId,
+  //         title: 'Out of Stock',
+  //         message: `${fuelLabel} is currently out of stock at this station.`,
+  //         notification_type: 'fuel_out_of_stock',
+  //         fuel_type: fuelType,
+  //         created_by: user.id
+  //       });
+  //     }
+  //   }
 
-    // Insert notifications if any
-    if (notifications.length > 0) {
-      try {
-        const { error } = await supabase
-          .from('notifications')
-          .insert(notifications);
+  //   // Check for significant price changes (more than 5% or 10 naira)
+  //   if (oldPrice > 0 && Math.abs(oldPrice - newPrice) > Math.max(oldPrice * 0.05, 10)) {
+  //     notifications.push({
+  //       station_id: stationId,
+  //       title: 'Price Update',
+  //       message: `${fuelLabel} price updated from ₦${oldPrice} to ₦${newPrice}`,
+  //       notification_type: 'price_update',
+  //       fuel_type: fuelType,
+  //       created_by: user.id
+  //     });
+  //   }
 
-        if (error) throw error;
-      } catch (error) {
-        console.error('Error creating notifications:', error);
-      }
-    }
-  };
+  //   // Handle notifications - update existing ones created by triggers or create new ones
+  //   if (notifications.length > 0) {
+  //     try {
+  //       for (const notification of notifications) {
+  //         // First, try to find an existing notification from the trigger
+  //         const { data: existingNotifications, error: selectError } = await supabase
+  //           .from('notifications')
+  //           .select('id')
+  //           .eq('station_id', stationId)
+  //           .eq('notification_type', notification.notification_type)
+  //           .eq('fuel_type', notification.fuel_type)
+  //           .is('created_by', null) // Find notifications without created_by (from trigger)
+  //           .order('last_updated', { ascending: false })
+  //           .limit(1);
+
+  //         if (selectError) throw selectError;
+
+  //         if (existingNotifications && existingNotifications.length > 0) {
+  //           // Update the existing notification with created_by
+  //           const { error: updateError } = await supabase
+  //             .from('notifications')
+  //             .update({ 
+  //               created_by: user.id,
+  //               title: notification.title,
+  //               message: notification.message
+  //             })
+  //             .eq('id', existingNotifications[0].id);
+
+  //           if (updateError) throw updateError;
+  //         } else {
+  //           // No existing notification found, create a new one
+  //           const { error: insertError } = await supabase
+  //             .from('notifications')
+  //             .insert([notification]);
+
+  //           if (insertError) throw insertError;
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error('Error handling notifications:', error);
+  //     }
+  //   }
+  // };
 
   const sendCustomNotification = async (title, message, notificationType = 'general') => {
     try {
@@ -237,7 +300,7 @@ export default function FuelManagementScreen() {
       if (error) throw error;
       
       Alert.alert('Success', 'Notification sent to all subscribers');
-      loadNotifications();
+      refetch();
     } catch (error) {
       console.error('Error sending notification:', error);
       Alert.alert('Error', 'Failed to send notification');
@@ -362,7 +425,7 @@ export default function FuelManagementScreen() {
             onPress={() => setShowNotifications(true)}
           >
             <Ionicons name="notifications" size={24} color="#4ade80" />
-            {notifications.length > 0 && (
+            {!isLoading && notifications.length > 0 && (
               <View style={styles.notificationBadge}>
                 <Text style={styles.notificationBadgeText}>{notifications.length}</Text>
               </View>
@@ -587,7 +650,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 5,
     right: 5,
-    backgroundColor: '#dc3545',
+    backgroundColor: Colors.dark.background,
     borderRadius: 10,
     width: 20,
     height: 20,
