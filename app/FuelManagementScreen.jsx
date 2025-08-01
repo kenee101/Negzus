@@ -19,6 +19,7 @@ import { Colors } from '@/constants/Colors';
 import { useLocalSearchParams } from 'expo-router';
 import { useNavigation } from 'expo-router';
 import { useNotifications } from '@/hooks/useNotifications';
+import { usePushNotifications } from '@/utils/pushNotificationService';
 
 const FUEL_TYPES = [
   { 
@@ -420,17 +421,31 @@ export default function FuelManagementScreen() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Fuel Management</Text>
           <Text style={styles.stationName}>{stationData?.name || 'Station'}</Text>
-          <TouchableOpacity
-            style={styles.notificationButton}
-            onPress={() => setShowNotifications(true)}
-          >
-            <Ionicons name="notifications" size={24} color="#4ade80" />
-            {!isLoading && notifications.length > 0 && (
-              <View style={styles.notificationBadge}>
-                <Text style={styles.notificationBadgeText}>{notifications.length}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          <View style={styles.headerButtons}>
+            {/* Test Push Notification Button */}
+            <TouchableOpacity
+              style={[styles.testButton, { marginRight: 10 }]}
+              onPress={async () => {
+                const { scheduleLocal } = usePushNotifications();
+                await scheduleLocal('Test Notification', 'This is a test push notification!', 2);
+                Alert.alert('Test Scheduled', 'Local notification will appear in 2 seconds');
+              }}
+            >
+              <Ionicons name="flask" size={20} color="#4ade80" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.notificationButton}
+              onPress={() => setShowNotifications(true)}
+            >
+              <Ionicons name="notifications" size={24} color="#4ade80" />
+              {!isLoading && notifications.length > 0 && (
+                <View style={styles.notificationBadge}>
+                  <Text style={styles.notificationBadgeText}>{notifications.length}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Quick Actions */}
@@ -629,6 +644,20 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 20,
     position: 'relative',
+  },
+  headerButtons: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  testButton: {
+    backgroundColor: 'rgba(74, 222, 128, 0.1)',
+    borderRadius: 8,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#4ade80',
   },
   headerTitle: {
     fontSize: 28,
